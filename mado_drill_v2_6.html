@@ -1,0 +1,325 @@
+<!-- mado_drill_v2_6.html | v2.6 | 2026-06-11 12:26 JST -->
+<!-- v2.5→v2.6：成績送信機能を追加。結果画面に組・番号・氏名→「先生に送信」ボタン。 -->
+<!--   送信先=GAS（mado_score_gas_v1_0.gs をデプロイしたURLを下のGAS_URLに貼る）。 -->
+<!--   ?cls=3A&num=5&name=山田 のURLパラメータと端末記憶（可能な環境のみ）で自動入力。 -->
+<!-- 大問4・5「さがし方ドリル」打ち込み版・抜き出し特化 -->
+<!-- v2.3との違い：(1)全8問が「本文から探して打ち込む」抜き出し型＝答えの語は必ず本文に実在 -->
+<!--   (2)長文は構成そのまま・テーマをマイナーチェンジ（図書委員→放送委員「今月の歌」／美術部→写真部） -->
+<!--   (3)答えの語もマイナーチェンジ（easily / feel / make / send / should stop taking / keep taking / good / the best） -->
+<!-- 難易度の位置づけ：v1.5=4択+実文 → v2.5=打ち込み+全問本文から探せる(本版) → v2.3=打ち込み+本文に無い語も(最難) -->
+<!-- 採点：normExact一致=○(1点) ／ normSpell一致(大文字・記号ずれ)=△(0点) ／ 綴り誤り=✕(0点) -->
+<!-- 英文=Comic Sans MS（大文字YのみArial=.y）。本文はオリジナル書き下ろし（正進社実文の構成を踏襲）。 -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大問4・5 さがし方ドリル（抜き出し打ち込み版）v2.6</title>
+<style>
+  :root{
+    --jp:"游ゴシック","Yu Gothic","Hiragino Sans","Noto Sans JP",sans-serif;
+    --en:"Comic Sans MS","Comic Sans",cursive;
+    --ink:#1f2328; --muted:#5f6368; --hint:#8a8f94;
+    --line:#dadce0; --card:#ffffff; --bg:#f6f7f8; --blue:#185fa5; --blue-bg:#e6f1fb;
+    --ok:#0f6e56; --ok-bg:#e1f5ee; --ng:#a32d2d; --ng-bg:#fceaea;
+    --warn:#9a6b00; --warn-bg:#fff6dd;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:var(--jp);color:var(--ink);
+    -webkit-text-size-adjust:100%;padding:16px;}
+  .wrap{max-width:760px;margin:0 auto;}
+  header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 2px 12px;}
+  h1{font-size:20px;font-weight:600;margin:0;}
+  .ver{font-size:12px;color:var(--hint);}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px;}
+  .stats{margin-left:auto;font-size:13px;color:var(--muted);}
+  .stats b{color:var(--ink);}
+  .hintline{font-size:13px;color:var(--muted);}
+  .passage{background:#fbfcfd;border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;margin-bottom:12px;max-height:240px;overflow:auto;}
+  .ptitle{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px;}
+  .pbody{font-family:var(--en);font-size:16px;line-height:1.7;color:#2a2f34;}
+  .pbody p{margin:0 0 8px;}
+  .pnum{font-family:var(--jp);font-size:11px;color:var(--hint);margin-right:4px;}
+  .y{font-family:"Arial",sans-serif;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
+  .prog{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .tech{display:inline-block;font-size:13px;font-weight:700;color:var(--blue);
+    background:var(--blue-bg);border-radius:7px;padding:4px 10px;margin-bottom:10px;}
+  .q{font-size:17px;margin-bottom:10px;}
+  .sent{font-family:var(--en);font-size:21px;line-height:1.6;margin-bottom:14px;color:#222;}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .lbl{font-size:16px;color:var(--muted);}
+  #ans{font-family:var(--en);font-size:22px;width:300px;max-width:100%;
+    padding:6px 10px;border:1px solid var(--line);border-radius:8px;outline:none;}
+  #ans:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg);}
+  #ans:disabled{background:#f3f4f5;}
+  .sub{font-size:12px;color:var(--hint);margin:2px 0 14px;}
+  #fb{min-height:28px;margin-top:14px;}
+  .verdict{font-size:18px;font-weight:700;}
+  .ok{color:var(--ok);} .ng{color:var(--ng);} .warn{color:var(--warn);}
+  .ansrow{font-size:16px;margin-top:6px;}
+  .ansrow .en{font-family:var(--en);font-weight:bold;font-size:19px;}
+  .exp{font-size:15px;color:#3a3f44;margin-top:8px;border-left:3px solid var(--blue);
+    padding:4px 0 4px 12px;line-height:1.6;background:#f7fafe;}
+  .exp .en{font-family:var(--en);}
+  .actions{margin-top:14px;display:flex;gap:10px;}
+  .act{font-family:var(--jp);font-size:16px;padding:9px 20px;border-radius:8px;cursor:pointer;
+    border:1px solid var(--blue);background:var(--blue);color:#fff;}
+  .act:hover{opacity:.92;}
+  .act.sec{background:#fff;color:var(--blue);}
+  /* リザルト */
+  #result{text-align:center;padding:10px 6px;}
+  .rtitle{font-size:18px;font-weight:700;color:var(--blue);margin-bottom:14px;}
+  .rnum{display:flex;align-items:center;justify-content:center;gap:8px;font-size:17px;margin-bottom:10px;}
+  #sid,#scls,#snm{font-family:var(--jp);font-size:18px;width:90px;text-align:center;
+    padding:6px 8px;border:1px solid var(--line);border-radius:8px;outline:none;}
+  #sid:focus,#scls:focus,#snm:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg);}
+  .score-big{font-size:64px;font-weight:800;color:var(--blue);line-height:1.1;margin:6px 0;}
+  .score-big .tot{font-size:30px;color:var(--muted);font-weight:700;}
+  .rbreak{font-size:16px;color:var(--ink);margin:6px 0 12px;}
+  .rnote{font-size:13px;color:var(--hint);margin-bottom:16px;}
+  @media(max-width:520px){.sent{font-size:18px;}#ans{font-size:19px;width:100%;}h1{font-size:18px;}
+    .pbody{font-size:15px;}.score-big{font-size:52px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>大問4・5 さがし方ドリル（抜き出し打ち込み版）</h1>
+    <span class="ver">v2.5　全8問・答えはぜんぶ本文の中にある</span>
+  </header>
+
+  <div class="bar">
+    <span class="hintline">【さがし方】答えの語は<b>かならず本文のどこかにある</b>。同じ場面・にた表現をさがして、そのまま打ちこもう。</span>
+    <span class="stats">○ <b id="sc">0</b> ／ <b id="done">0</b> / <b id="tot">0</b> 問</span>
+  </div>
+
+  <div class="passage" id="passage">
+    <div class="ptitle" id="ptitle">―</div>
+    <div class="pbody" id="pbody"></div>
+  </div>
+
+  <div class="card">
+    <div id="qarea">
+      <div class="prog" id="prog">1 / 8</div>
+      <div class="tech" id="tech">―</div>
+      <div class="q" id="q">―</div>
+      <div class="sent" id="sent"></div>
+      <div class="row">
+        <span class="lbl">答え：</span>
+        <input id="ans" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="答えを英語で入力">
+      </div>
+      <div class="sub">本文から探して入力 → Enterで判定 → もう一度Enterで次へ</div>
+      <div id="fb"></div>
+      <div class="actions">
+        <button class="act" id="check">判定</button>
+        <button class="act sec" id="next" style="display:none;">次へ →</button>
+      </div>
+    </div>
+    <div id="result" style="display:none;">
+      <div class="rtitle">おつかれさま！</div>
+      <div class="score-big"><span id="rscore">0</span> <span class="tot">/ <span id="rtot">8</span> 点</span></div>
+      <div class="rbreak" id="rbreak">○ 0 ／ △ 0 ／ ✕ 0</div>
+      <div class="rnum">
+        <input id="scls" type="text" autocomplete="off" placeholder="組(例:3A)" aria-label="組" style="width:90px;">
+        <input id="sid" type="text" inputmode="numeric" autocomplete="off" placeholder="番号" aria-label="出席番号">
+        <input id="snm" type="text" autocomplete="off" placeholder="名前" aria-label="名前" style="width:140px;">
+      </div>
+      <div class="actions" style="justify-content:center;">
+        <button class="act" id="send">先生に送信</button>
+        <button class="act sec" id="again">もう一度</button>
+      </div>
+      <div class="rnote" id="sendmsg">組・番号・名前を入れて「先生に送信」を押してね（△は「つづりは合っているが大文字・記号ミス」です）</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ★★★ ここに GAS のウェブアプリURLを貼る（mado_score_gas_v1_0.gs をデプロイして取得） ★★★
+  var GAS_URL = "https://script.google.com/macros/s/AKfycbxzR0bVxi_SV8d3hKbOSPnZZ1KLI0Ye_1y5w2wo0vPE0o6vvd8lvtiwPPF8wLyzn5Wiwg/exec";
+  var DRILL_VER = "v2.6";
+
+  var PASSAGES = {
+    haruka:{ title:"放送委員 Haruka のスピーチ「今月の歌」", paras:[
+      "Good morning, everyone. I'm Haruka from the broadcasting committee. Today I want to talk about our new plan, \"Song of the Month.\" This plan will start next month. We hope students will enjoy music and find new songs more easily.",
+      "When I became a junior high school student, I often listened to music in my room. There were so many songs on the internet, but I couldn't choose my favorite one easily. Sometimes I just looked at the long list and went to bed without listening to any songs. One day, I talked about this problem with my family at breakfast. After breakfast, my brother gave me a CD. He said, \"I think you will like this song.\" He was right. I listened to it again and again. I could feel the singer's voice in my heart. It was my first time to enjoy a song so much. I wanted to introduce good songs to other students, so I joined the broadcasting committee.",
+      "In this plan, we will choose one song every month and play it at lunch time. We want to make lunch time fun with music. We are going to play many kinds of songs. Some are pop songs. Some are old songs. Maybe some are songs from other countries. After listening to the song, please send us your comments. We will be very happy to hear from you.",
+      "Some people say young people don't listen to full songs now. My friends listen to only short parts of songs on their phones every day. Of course, I sometimes do, too. There are too many songs on the internet, so maybe many people can't find their favorite songs [ あ ] now.",
+      "Short parts of songs are useful when we want to find new songs quickly. But is that really enjoying music? I don't think so. If you only listen to a short part, you can't [ い ] the singer's true feelings. Good songs [ う ] people happy. So please try to join our new plan, and we hope you will [ え ] us many comments. You can find a good song."
+    ]},
+    daiki:{ title:"Daiki の作文「写真部」", paras:[
+      "When I became a junior high school student, I joined the photo club. I liked taking pictures, so I wanted to take beautiful ones.",
+      "Three months later, in July, we had a photo contest. It was my first one. I decided to take a picture of the mountain near my town. I did many things to take the best picture. I took pictures hard every morning, I read some books about famous photographers' pictures, and I asked some members how to take better pictures. When I finished taking the picture, I thought it was [ え ]. However, I didn't get any prizes. My friend, Shota, said, \"I think your picture needs something.\" I said, \"What is it?\" He said nothing. I thought, \"Maybe I should stop taking pictures because I didn't get a prize.\"",
+      "That night, my grandfather saw the picture. He said, \"This is beautiful, but you look so sad. Why?\" I told him about the contest. He said, \"How did you feel when you saw the mountain in the morning?\" I said, \"The sky slowly changed its color, and the mountain looked really beautiful.\" I told him about my other feelings on that morning, too. He said, \"How about expressing them? Your picture is already good. And don't worry, Daiki. You should keep taking pictures if you really like taking pictures. If you keep taking pictures, your pictures will be better.\" I said, \"That may be right. I'll try again.\"",
+      "The next weekend, I went to the mountain again before breakfast. I thought about the colors of the sky and my town. I expressed my feelings in the picture. One month later, I showed the new picture to our club teacher. She said, \"This picture is really [ う ].\" I joined another contest with the picture. Finally, I got a prize.",
+      "After the contest, I got some prizes. Of course, I sometimes think taking good pictures is difficult. But I don't think that I [ あ ] when I can't get a prize. I will [ い ] pictures in high school."
+    ]}
+  };
+
+  // 全問「抜き出す」：答えの語は必ず本文に実在する（ビルド時に機械検証済み）
+  var QUESTIONS = [
+    {p:"haruka", q:"空所 (あ) に入る英語1語を、本文からそのまま抜き出そう。ヒント：第1・第2段落に同じ語があるよ。",
+      sent:"...maybe many people can't find their favorite songs [ ___ ] now.", a:"easily",
+      exp:"第1段落 find new songs more easily ／ 第2段落 I couldn't choose my favorite one easily と同じ easily。\"今は好きな歌をかんたんに見つけられない\"。"},
+    {p:"haruka", q:"空所 (い) に入る英語1語を、本文からそのまま抜き出そう。ヒント：第2段落のCDの場面。",
+      sent:"If you only listen to a short part, you can't [ ___ ] the singer's true feelings.", a:"feel",
+      exp:"第2段落 I could feel the singer's voice in my heart の feel。\"短い部分だけでは、歌手の本当の気持ちを感じられない\"。"},
+    {p:"haruka", q:"空所 (う) に入る英語1語を、本文からそのまま抜き出そう。ヒント：第3段落の lunch time の文。",
+      sent:"Good songs [ ___ ] people happy.", a:"make",
+      exp:"第3段落 We want to make lunch time fun の make。make＋人＋happy＝\"〜を幸せにする\"。make A B の形です。"},
+    {p:"haruka", q:"空所 (え) に入る英語1語を、本文からそのまま抜き出そう。ヒント：第3段落の comments の文。",
+      sent:"...we hope you will [ ___ ] us many comments.", a:"send",
+      exp:"第3段落 please send us your comments の send。send＋人＋物＝\"〜に…を送る\"。同じ形をさがすのがコツ。"},
+
+    {p:"daiki", q:"空所 (え) に入る英語2語を、本文（同じ第2段落）からそのまま抜き出そう。",
+      sent:"When I finished taking the picture, I thought it was [ ___ ]. However, I didn't get any prizes.", a:"the best",
+      exp:"同じ段落の I did many things to take the best picture の the best。\"最高だと思った→しかし入賞しなかった\"。直後の However（逆接）ともつながります。"},
+    {p:"daiki", q:"空所 (う) に入る英語1語を、本文からそのまま抜き出そう。ヒント：第3段落のおじいさんのことば。",
+      sent:"She said, \"This picture is really [ ___ ].\"", a:"good",
+      exp:"第3段落 Your picture is already good の good。おじいさんの good が、先生の \"really good\" につながる流れです。"},
+    {p:"daiki", q:"空所 (あ) に入る英語3語を、本文からそのまま抜き出そう。ヒント：第2段落の最後。",
+      sent:"But I don't think that I [ ___ ] when I can't get a prize.", a:"should stop taking",
+      exp:"第2段落 Maybe I should stop taking pictures の3語。\"入賞できなくても、写真をやめようとは思わない\"。前の気持ちとの対比です。"},
+    {p:"daiki", q:"空所 (い) に入る英語2語を、本文からそのまま抜き出そう。ヒント：第3段落のおじいさんのことば。",
+      sent:"I will [ ___ ] pictures in high school.", a:"keep taking",
+      exp:"第3段落 You should keep taking pictures の keep taking。keep ～ing＝\"〜し続ける\"。おじいさんのことばを自分の決意に。"}
+  ];
+
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function enHTML(s){return esc(s).replace(/Y/g,'<span class="y">Y</span>');}
+
+  function normSpell(x){return (x||"").toLowerCase().replace(/[\u2019']/g,"").replace(/[^a-z]+/g," ").trim().replace(/\s+/g," ");}
+  function normExact(x){return (x||"").trim().replace(/\s+/g," ");}
+  function judge(u,q){
+    var alts=q.ac?q.ac:[q.a];
+    var ue=normExact(u), us=normSpell(u);
+    if(us==="") return null;
+    var spell=false;
+    for(var i=0;i<alts.length;i++){
+      if(normExact(alts[i])===ue) return "ok";
+      if(normSpell(alts[i])===us) spell=true;
+    }
+    return spell?"warn":"ng";
+  }
+
+  var pool=[], queue=[], idx=0, sc=0, warnN=0, ngN=0, done=0, cur=null, answered=false;
+  var $=function(id){return document.getElementById(id);};
+
+  function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+  function showPassage(pid){
+    var p=PASSAGES[pid];
+    $("ptitle").textContent=p.title;
+    $("pbody").innerHTML=p.paras.map(function(t,i){
+      return "<p><span class=\"pnum\">【第"+(i+1)+"段落】</span>"+enHTML(t)+"</p>";
+    }).join("");
+  }
+
+  function startSession(){
+    pool=QUESTIONS.slice();
+    queue=shuffle(pool.map(function(_,i){return i;}));
+    idx=0;sc=0;warnN=0;ngN=0;done=0;
+    $("result").style.display="none";
+    $("qarea").style.display="";
+    $("passage").style.display="";
+    $("tot").textContent=pool.length;
+    $("sc").textContent=0;$("done").textContent=0;
+    renderQuestion();
+  }
+  function renderQuestion(){
+    cur=pool[queue[idx]];
+    showPassage(cur.p);
+    $("prog").textContent=(idx+1)+" / "+pool.length;
+    $("tech").textContent="【さがし方】抜き出す — 同じ場面・にた表現を本文からさがし、語を変えずそのまま書く。";
+    $("q").textContent=cur.q;
+    $("sent").innerHTML=enHTML(cur.sent);
+    $("ans").value="";$("ans").disabled=false;$("ans").focus();
+    $("fb").innerHTML="";
+    $("check").style.display="";$("next").style.display="none";
+    answered=false;
+  }
+  function check(){
+    if(answered||!cur)return;
+    var r=judge($("ans").value,cur);
+    if(r===null)return;
+    done++;
+    var verdict;
+    if(r==="ok"){sc++;verdict='<div class="verdict ok">○　正解！</div>';}
+    else if(r==="warn"){warnN++;verdict='<div class="verdict warn">△　つづりはOK！大文字・記号を直そう</div>';}
+    else{ngN++;verdict='<div class="verdict ng">✕　ちがうよ</div>';}
+    var ans='<div class="ansrow">正答：<span class="en">'+enHTML(cur.a)+'</span></div>';
+    var exp='<div class="exp">'+enHTML(cur.exp)+'</div>';
+    $("fb").innerHTML=verdict+ans+exp;
+    $("sc").textContent=sc;$("done").textContent=done;
+    $("ans").disabled=true;$("check").style.display="none";
+    var last=(idx>=queue.length-1);
+    $("next").textContent=last?"結果を見る →":"次へ →";
+    $("next").style.display="";
+    $("next").focus();
+    answered=true;
+  }
+  function next(){
+    idx++;
+    if(idx>=queue.length){showResult();}
+    else renderQuestion();
+  }
+  function showResult(){
+    $("qarea").style.display="none";
+    $("passage").style.display="none";
+    $("result").style.display="";
+    $("rscore").textContent=sc;
+    $("rtot").textContent=pool.length;
+    $("rbreak").textContent="○ "+sc+" ／ △ "+warnN+" ／ ✕ "+ngN;
+    fillIdentity();
+    $("send").disabled=false;$("send").textContent="先生に送信";
+    $("sendmsg").textContent="組・番号・名前を入れて「先生に送信」を押してね（△は大文字・記号ミス）";
+    if(!$("scls").value)$("scls").focus(); else if(!$("sid").value)$("sid").focus(); else $("send").focus();
+  }
+
+  // ---- 自動入力（URL ?cls=3A&num=5&name=… ＋ 端末記憶） ----
+  function store(k,v){try{localStorage.setItem("mado_"+k,v);}catch(e){}}
+  function load(k){try{return localStorage.getItem("mado_"+k)||"";}catch(e){return "";}}
+  function fillIdentity(){
+    var p;
+    try{p=new URLSearchParams(location.search);}catch(e){p=null;}
+    $("scls").value=(p&&p.get("cls"))||load("cls")||$("scls").value;
+    $("sid").value =(p&&p.get("num"))||load("num")||$("sid").value;
+    $("snm").value =(p&&p.get("name"))||load("name")||$("snm").value;
+  }
+
+  // ---- 送信 ----
+  function sendScore(){
+    var cls=$("scls").value.trim(), num=$("sid").value.trim(), name=$("snm").value.trim();
+    var msg=$("sendmsg");
+    if(!cls||!num){msg.textContent="組と番号を入れてね";return;}
+    if(!GAS_URL){msg.textContent="（先生へ：GAS_URLが未設定です。HTML冒頭に貼ってください）";return;}
+    store("cls",cls);store("num",num);store("name",name);
+    $("send").disabled=true;$("send").textContent="送信中…";
+    var payload={cls:cls,num:num,name:name,ver:DRILL_VER,
+      score:sc,total:pool.length,ok:sc,warn:warnN,ng:ngN};
+    fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)})
+      .then(function(res){return res.json();})
+      .then(function(j){
+        if(j&&j.result==="ok"){$("send").textContent="送信OK";msg.textContent="記録できたよ！おつかれさま。";}
+        else{throw new Error((j&&j.message)||"server error");}
+      })
+      .catch(function(err){
+        $("send").disabled=false;$("send").textContent="先生に送信";
+        msg.textContent="送信できなかった…電波を確認してもう一度。（"+String(err).slice(0,40)+"）";
+      });
+  }
+
+  $("check").addEventListener("click",check);
+  $("next").addEventListener("click",next);
+  $("again").addEventListener("click",startSession);
+  $("send").addEventListener("click",sendScore);
+  $("ans").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();if(!answered)check();}});
+
+  startSession();
+})();
+</script>
+</body>
+</html>
