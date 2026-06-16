@@ -1,4 +1,7 @@
-<!-- mado_drill_v2_6.html | v2.6 | 2026-06-11 12:26 JST -->
+<!-- mado_drill_v2_7.html | v2.7 | 2026-06-16 09:07 JST -->
+<!-- v2.6→v2.7：複数語の答え(the best / should stop taking / keep taking)でスラッシュ区切りが△になる罠を修正。 -->
+<!--   normExactで / ／ 全角空白を語区切りとして吸収(the/best も the best も○)。複数語問題に半角スペース区切りの注記を追加。 -->
+<!--   画面右上の版表記を v2.7 に統一(v2.5のままだったバグを修正)。 -->
 <!-- v2.5→v2.6：成績送信機能を追加。結果画面に組・番号・氏名→「先生に送信」ボタン。 -->
 <!--   送信先=GAS（mado_score_gas_v1_0.gs をデプロイしたURLを下のGAS_URLに貼る）。 -->
 <!--   ?cls=3A&num=5&name=山田 のURLパラメータと端末記憶（可能な環境のみ）で自動入力。 -->
@@ -14,7 +17,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>大問4・5 さがし方ドリル（抜き出し打ち込み版）v2.6</title>
+<title>大問4・5 さがし方ドリル（抜き出し打ち込み版）v2.7</title>
 <style>
   :root{
     --jp:"游ゴシック","Yu Gothic","Hiragino Sans","Noto Sans JP",sans-serif;
@@ -87,7 +90,7 @@
 <div class="wrap">
   <header>
     <h1>大問4・5 さがし方ドリル（抜き出し打ち込み版）</h1>
-    <span class="ver">v2.5　全8問・答えはぜんぶ本文の中にある</span>
+    <span class="ver">v2.7　全8問・答えはぜんぶ本文の中にある</span>
   </header>
 
   <div class="bar">
@@ -139,7 +142,7 @@
 (function(){
   // ★★★ ここに GAS のウェブアプリURLを貼る（mado_score_gas_v1_0.gs をデプロイして取得） ★★★
   var GAS_URL = "https://script.google.com/macros/s/AKfycbxzR0bVxi_SV8d3hKbOSPnZZ1KLI0Ye_1y5w2wo0vPE0o6vvd8lvtiwPPF8wLyzn5Wiwg/exec";
-  var DRILL_VER = "v2.6";
+  var DRILL_VER = "v2.7";
 
   var PASSAGES = {
     haruka:{ title:"放送委員 Haruka のスピーチ「今月の歌」", paras:[
@@ -173,16 +176,16 @@
       sent:"...we hope you will [ ___ ] us many comments.", a:"send",
       exp:"第3段落 please send us your comments の send。send＋人＋物＝\"〜に…を送る\"。同じ形をさがすのがコツ。"},
 
-    {p:"daiki", q:"空所 (え) に入る英語2語を、本文（同じ第2段落）からそのまま抜き出そう。",
+    {p:"daiki", q:"空所 (え) に入る英語2語を、本文（同じ第2段落）からそのまま抜き出そう。語と語は半角スペースで区切ってね。",
       sent:"When I finished taking the picture, I thought it was [ ___ ]. However, I didn't get any prizes.", a:"the best",
       exp:"同じ段落の I did many things to take the best picture の the best。\"最高だと思った→しかし入賞しなかった\"。直後の However（逆接）ともつながります。"},
     {p:"daiki", q:"空所 (う) に入る英語1語を、本文からそのまま抜き出そう。ヒント：第3段落のおじいさんのことば。",
       sent:"She said, \"This picture is really [ ___ ].\"", a:"good",
       exp:"第3段落 Your picture is already good の good。おじいさんの good が、先生の \"really good\" につながる流れです。"},
-    {p:"daiki", q:"空所 (あ) に入る英語3語を、本文からそのまま抜き出そう。ヒント：第2段落の最後。",
+    {p:"daiki", q:"空所 (あ) に入る英語3語を、本文からそのまま抜き出そう。ヒント：第2段落の最後。語と語は半角スペースで区切ってね。",
       sent:"But I don't think that I [ ___ ] when I can't get a prize.", a:"should stop taking",
       exp:"第2段落 Maybe I should stop taking pictures の3語。\"入賞できなくても、写真をやめようとは思わない\"。前の気持ちとの対比です。"},
-    {p:"daiki", q:"空所 (い) に入る英語2語を、本文からそのまま抜き出そう。ヒント：第3段落のおじいさんのことば。",
+    {p:"daiki", q:"空所 (い) に入る英語2語を、本文からそのまま抜き出そう。ヒント：第3段落のおじいさんのことば。語と語は半角スペースで区切ってね。",
       sent:"I will [ ___ ] pictures in high school.", a:"keep taking",
       exp:"第3段落 You should keep taking pictures の keep taking。keep ～ing＝\"〜し続ける\"。おじいさんのことばを自分の決意に。"}
   ];
@@ -191,7 +194,7 @@
   function enHTML(s){return esc(s).replace(/Y/g,'<span class="y">Y</span>');}
 
   function normSpell(x){return (x||"").toLowerCase().replace(/[\u2019']/g,"").replace(/[^a-z]+/g," ").trim().replace(/\s+/g," ");}
-  function normExact(x){return (x||"").trim().replace(/\s+/g," ");}
+  function normExact(x){return (x||"").trim().replace(/[\/／\u3000]+/g," ").replace(/\s+/g," ");}
   function judge(u,q){
     var alts=q.ac?q.ac:[q.a];
     var ue=normExact(u), us=normSpell(u);
