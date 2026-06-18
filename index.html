@@ -1,4 +1,6 @@
-<!-- mado_loop.html | v0.9 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.10 | 2026-06-18 JST -->
+<!--   v0.9→v0.10：レベルバーを全幅に拡張＋目盛り線追加。級間を4分割（3中間点）した連続位置でポインタ表示。 -->
+<!--   数値は出さず「3級ギリ合格／3級＋α／4と3のあいだ／3級の手前」等の語で“あくまで目安”を視覚化（CSE換算は非公開のため不使用）。 -->
 <!--   v0.8→v0.9：3級に「長文読解」ジャンルを新設。大問4・5の長文2本（放送委員Haruka／写真部Daiki）と抜き出し8問を統合。 -->
 <!--   出題時にパッセージを上部表示。答えは本文中に実在する抜き出し型。総計375問。 -->
 <!--   v0.7→v0.8：7・6・5・準2・準2+・2級も増量（MORE3）。全級バランス化。総計367問。 -->
@@ -56,19 +58,23 @@
   .ver{font-size:11px;color:var(--hint);background:#fff;border:1px solid var(--line);
     padding:3px 9px;border-radius:999px;white-space:nowrap;align-self:flex-start;}
   /* 級レベルバー（7未満▶7▶…▶2級／青→黄→赤） */
-  .levelbar{margin-left:auto;width:340px;max-width:50%;}
-  .levelbar .lb-cap{font-size:12px;font-weight:700;color:var(--brand-ink);text-align:right;margin-bottom:5px;}
+  .levelbar{flex:1 1 auto;min-width:0;margin-left:18px;max-width:600px;}
+  .levelbar .lb-cap{font-size:12px;font-weight:700;color:var(--brand-ink);text-align:right;margin-bottom:5px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .levelbar.none .lb-cap{color:var(--muted);font-weight:600;}
-  .lb-track{position:relative;height:9px;border-radius:999px;
-    background:linear-gradient(90deg,#2b59c3 0%,#e9b21e 50%,#d6453f 100%);
+  .lb-track{position:relative;height:10px;border-radius:999px;
+    background:linear-gradient(90deg,#2b59c3 0%,#3f8fd0 25%,#e9b21e 50%,#e0782f 75%,#d6453f 100%);
     box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);}
-  .lb-pointer{position:absolute;top:50%;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;
-    background:#fff;border:2px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.32);transition:left .4s ease;}
-  .lb-scale{display:grid;grid-template-columns:repeat(9,1fr);margin-top:4px;}
-  .lb-cell{font-size:9px;color:var(--hint);text-align:center;line-height:1.15;}
+  .lb-tick{position:absolute;top:1px;bottom:1px;width:2px;transform:translateX(-50%);
+    background:rgba(255,255,255,.55);border-radius:1px;}
+  .lb-pointer{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+    background:#fff;border:2.5px solid var(--ink);box-shadow:0 1px 5px rgba(0,0,0,.35);
+    transition:left .45s cubic-bezier(.3,.9,.3,1);z-index:2;}
+  .lb-scale{position:relative;height:13px;margin-top:5px;}
+  .lb-cell{position:absolute;top:0;font-size:9.5px;color:var(--hint);line-height:1.1;white-space:nowrap;}
   .lb-cell.on{color:var(--ink);font-weight:800;}
-  .levelbar.none .lb-track{filter:grayscale(.55) opacity(.6);}
-  @media(max-width:560px){.levelbar{max-width:100%;width:100%;order:3;margin:10px 0 0;}
+  .levelbar.none .lb-track{filter:grayscale(.55) opacity(.55);}
+  @media(max-width:560px){.levelbar{max-width:100%;min-width:0;width:100%;flex-basis:100%;order:3;margin:10px 0 0;}
     .levelbar .lb-cap{text-align:center;}header{flex-wrap:wrap;}.ver{margin-left:auto;}}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
@@ -249,7 +255,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.9";
+  var APP_VER = "v0.10";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1015,29 +1021,44 @@
   var LEVEL_ORDER=["7","6","5","4","3","pre2","pre2plus","2"]; // 易→難
   function saveLastTest(o){try{localStorage.setItem(LASTTEST_KEY,JSON.stringify(o));}catch(e){}}
   function loadLastTest(){try{return JSON.parse(localStorage.getItem(LASTTEST_KEY));}catch(e){return null;}}
-  function estimateLevel(){
-    var lt=loadLastTest(); if(!lt) return {state:"none"};
-    var i=LEVEL_ORDER.indexOf(lt.grade);
-    if(lt.pass) return {state:"level", id:lt.grade};   // 合格 → その級レベル
-    if(i<=0)    return {state:"below"};                 // 最易級で不合格
-    return {state:"level", id:LEVEL_ORDER[i-1]};        // 不合格 → 一段やさしい級
+  var LEVEL_BAR_LABELS=["7未満","7級","6級","5級","4級","3級","準2級","準2+","2級"]; // 9メモリ（バー座標0〜8）
+  // 直近の判定テストから、バー座標 L（0〜8の連続値・0.25刻みに丸め）を求める。
+  //   合格：その級メモリ〜+0.75（満点で次級の「手前」まで）。不合格：その級の-0.25〜-0.75（手前〜下の級+α）。
+  //   ※数値は一切表示しない。あくまで視覚的な「目安」。
+  function levelCoord(){
+    var lt=loadLastTest(); if(!lt) return null;
+    var m=LEVEL_ORDER.indexOf(lt.grade); if(m<0) return null; // 級判定対象外（prep等）は無視
+    var bar=m+1;                                   // バー座標（0=7未満なので+1）
+    var L;
+    if(lt.pass){ L=bar + Math.min(Math.max((lt.pct-65)/35,0),1)*0.75; }
+    else       { L=bar - 0.25 - Math.min(Math.max((65-lt.pct)/65,0),1)*0.5; }
+    L=Math.round(L*4)/4;                            // 0.25刻みにスナップ（離散的な「段」の感覚に）
+    return Math.min(Math.max(L,0),8);
   }
-  var LEVEL_BAR_LABELS=["7未満","7級","6級","5級","4級","3級","準2級","準2+","2級"]; // 9メモリ
+  function levelCaption(L){
+    if(L==null) return "まだ判定なし — 判定テストで力をはかろう";
+    if(L<1)     return "いまの目安：英検7級にチャレンジ中";
+    if(L>=8)    return "いまの目安：英検2級レベル（合格圏）";
+    var lb=LEVEL_BAR_LABELS, i=Math.floor(L+1e-9), f=L-i;
+    if(f<0.125) return "いまの目安：英検"+lb[i]+"ギリ合格";
+    if(f<0.375) return "いまの目安：英検"+lb[i]+" ＋α";
+    if(f<0.625) return "いまの目安：英検"+lb[i]+"と"+lb[i+1]+"の あいだ";
+    return "いまの目安：英検"+lb[i+1]+"の手前";
+  }
   function updateLevelChip(){
     var el=document.getElementById("levelbar"); if(!el) return;
-    var lv=estimateLevel();
-    var barIdx=-1, caption;
-    if(lv.state==="none"){ caption="まだ判定なし — 判定テストで力をはかろう"; }
-    else if(lv.state==="below"){ barIdx=0; caption="いまの目安：英検7級にチャレンジ中"; }
-    else { barIdx=LEVEL_ORDER.indexOf(lv.id)+1; caption="いまの目安：英検"+gradeMeta(lv.id).name+"レベル"; }
-    var scale=LEVEL_BAR_LABELS.map(function(t,i){
-      return '<span class="lb-cell'+(i===barIdx?' on':'')+'">'+esc(t)+'</span>';
-    }).join("");
-    var pointer = barIdx>=0
-      ? '<span class="lb-pointer" style="left:'+(((barIdx+0.5)/9*100).toFixed(2))+'%"></span>' : '';
-    el.className="levelbar"+(lv.state==="none"?" none":"");
-    el.innerHTML='<div class="lb-cap">'+esc(caption)+'</div>'+
-                 '<div class="lb-track">'+pointer+'</div>'+
+    var L=levelCoord();
+    var nearest = (L==null)? -1 : Math.round(L);
+    var ticks="", scale="";
+    for(var i=0;i<9;i++){
+      ticks+='<span class="lb-tick" style="left:'+(i/8*100)+'%"></span>';
+      var tf = i===0?'translateX(0)':(i===8?'translateX(-100%)':'translateX(-50%)');
+      scale+='<span class="lb-cell'+(i===nearest?' on':'')+'" style="left:'+(i/8*100)+'%;transform:'+tf+'">'+esc(LEVEL_BAR_LABELS[i])+'</span>';
+    }
+    var pointer = (L==null)? '' : '<span class="lb-pointer" style="left:'+(L/8*100).toFixed(2)+'%"></span>';
+    el.className="levelbar"+(L==null?" none":"");
+    el.innerHTML='<div class="lb-cap">'+esc(levelCaption(L))+'</div>'+
+                 '<div class="lb-track">'+ticks+pointer+'</div>'+
                  '<div class="lb-scale">'+scale+'</div>';
   }
 
