@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.10 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.11 | 2026-06-18 JST -->
+<!--   v0.10→v0.11：使える英語学（中学入学準備）を+10で計20問。4技能別問題を全級拡充。総計413問。 -->
 <!--   v0.9→v0.10：レベルバーを全幅に拡張＋目盛り線追加。級間を4分割（3中間点）した連続位置でポインタ表示。 -->
 <!--   数値は出さず「3級ギリ合格／3級＋α／4と3のあいだ／3級の手前」等の語で“あくまで目安”を視覚化（CSE換算は非公開のため不使用）。 -->
 <!--   v0.8→v0.9：3級に「長文読解」ジャンルを新設。大問4・5の長文2本（放送委員Haruka／写真部Daiki）と抜き出し8問を統合。 -->
@@ -255,7 +256,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.10";
+  var APP_VER = "v0.11";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -980,6 +981,71 @@
     {t:"fill", p:"daiki", q:"空所(あ)に入る英語3語を本文から抜き出そう。ヒント：第2段落の最後。半角スペースで区切る。", en:"But I don't think that I [ ___ ] when I can't get a prize.", a:"should stop taking", ex:"第2段落 Maybe I should stop taking pictures の3語。前の気持ちとの対比。"},
     {t:"fill", p:"daiki", q:"空所(い)に入る英語2語を本文から抜き出そう。ヒント：第3段落のおじいさんのことば。半角スペースで区切る。", en:"I will [ ___ ] pictures in high school.", a:"keep taking", ex:"第3段落 You should keep taking pictures の keep taking。keep ～ing＝〜し続ける。"}
   ];
+
+  // 追加問題（拡充3：使える英語学+10、4技能別問題を全級拡充）
+  var MORE4 = {
+    "prep":{ meta:[
+      {t:"mc", q:"わからない単語を辞書で調べたあと、いちばん力になるのは？", ch:["その単語を使った例文ごと覚える","意味だけ赤線を引く","写真にとって満足する","とばして忘れる"], chJp:true, a:0, ex:"単語は例文・場面とセットだと記憶に残りやすい。"},
+      {t:"mc", q:"教科書の音読でおすすめのやり方は？", ch:["意味を思いうかべながら声に出す","ただ速く読む","下を向いて小声で読む","1回だけ読む"], chJp:true, a:0, ex:"意味を意識した音読は読解力・発信力の土台になる。"},
+      {t:"mc", q:"テストが返ってきたら、まずすると良いのは？", ch:["まちがえた問題をやり直して原因を知る","点数だけ見て終わる","答案をすてる","次まで放置する"], chJp:true, a:0, ex:"テスト直し＝いちばん伸びるチャンス。"},
+      {t:"mc", q:"単語帳の効果的な使い方は？", ch:["少しずつ何度もくり返す","1日で全部覚えようとする","ながめるだけ","最初のページだけ"], chJp:true, a:0, ex:"分散して反復すると記憶が定着する。"},
+      {t:"mc", q:"英語を聞きながら少し遅れてまねして言う練習を何という？", ch:["シャドーイング","リーディング","ライティング","ディベート"], chJp:true, a:0, ex:"シャドーイングは音とリズムをつかむ練習。"},
+      {t:"mc", q:"英作文を書き終えたら、最後にすると良いのは？", ch:["主語と動詞・つづりを見直す","すぐ提出する","全部消す","日本語に訳す"], chJp:true, a:0, ex:"見直し（プルーフリード）でケアレスミスを減らせる。"},
+      {t:"mc", q:"英語の本を読むとき、知らない単語が少し出てきたら？", ch:["話の流れから意味を推測して読み進める","1語ずつ全部辞書を引く","読むのをやめる","日本語訳だけ読む"], chJp:true, a:0, ex:"多読は推測しながら読み進めるのがコツ。"},
+      {t:"mc", q:"英語の勉強を続けるコツは？", ch:["小さな目標を立てて達成感を味わう","高い目標だけ立てる","他人と比べて落ちこむ","気が向いたときだけやる"], chJp:true, a:0, ex:"スモールステップが継続の秘訣。"},
+      {t:"mc", q:"新しい単語を覚えるとき、いっしょに確認すると良いのは？", ch:["発音（読み方）","重さ","ねだん","色"], chJp:true, a:0, ex:"発音とセットで覚えるとリスニング・スピーキングに効く。"},
+      {t:"mc", q:"会話力を上げる毎日の習慣としてよいのは？", ch:["身のまわりの物を英語で言ってみる","日本語で全部考える","単語を見るだけ","だまっている"], chJp:true, a:0, ex:"日常を英語にする習慣が発信力を育てる。"}
+    ]},
+    "7":{ technique:[
+      {t:"mc", q:"【7級リーディング】🌧️ 雨がふっている絵に合う英文は？", ch:["It is raining.","It is sunny.","It is snowing.","It is windy."], a:0, ex:"天気の表現。raining。"},
+      {t:"mc", q:"【7級リスニング】絵:🍎🍎🍎 質問『How many apples?』", ch:["Three.","Two.","One.","Five."], a:0, ex:"数を答える。Three。"},
+      {t:"mc", q:"【7級リーディング】絵:😺ねむっているねこ に合う英文は？", ch:["The cat is sleeping.","The cat is running.","The cat is eating.","The cat is jumping."], a:0, ex:"動作 sleeping。"}
+    ]},
+    "6":{ technique:[
+      {t:"mc", en:"A: How old are you?", q:"【6級リスニング】自然な応答は？", ch:["I'm eleven years old.","It's a dog.","Yes, I do.","On Monday."], a:0, ex:"年齢をたずねられたら年齢で答える。"},
+      {t:"mc", q:"【6級リーディング】“I go to school by bike. It is blue.” 内容に合う絵は？", ch:["青い自転車","赤い車","青いバス","緑の自転車"], chJp:true, a:0, ex:"乗り物（bike）と色（blue）が両方合う絵。"},
+      {t:"mc", en:"A: Can you swim?", q:"【6級リスニング】自然な応答は？", ch:["Yes, I can.","It's mine.","On Sunday.","I'm fine."], a:0, ex:"Can you ～? には Yes, I can.。"}
+    ]},
+    "5":{ technique:[
+      {t:"mc", en:"A: What subject do you like? B: (   )", q:"【5級・聞く/話す】自然な応答は？", ch:["I like science.","Yes, I do.","It's mine.","At seven."], a:0, ex:"好きな教科を答える。"},
+      {t:"mc", en:"A: Where is my pen? B: (   )", q:"【5級・聞く/話す】自然な応答は？", ch:["It's on the desk.","Yes, it is.","I'm twelve.","Thank you."], a:0, ex:"場所をたずねられたら位置で答える。"},
+      {t:"mc", en:"A: Do you have a dog? B: (   )", q:"【5級・聞く/話す】自然な応答は？", ch:["Yes, I do. It's cute.","It's raining.","At three.","Goodbye."], a:0, ex:"Do you ～? には Yes, I do.。"}
+    ]},
+    "4":{ technique:[
+      {t:"mc", en:"A: What did you do last weekend? B: (   )", q:"【4級・聞く/話す】自然な応答は？", ch:["I went to the zoo.","Yes, I do.","It's mine.","At seven."], a:0, ex:"過去の行動を答える。"},
+      {t:"mc", q:"【4級・読む】掲示: BOOK SALE / Date: Sat & Sun / Used books: 100 yen each. 質問: How much is one used book?", ch:["100 yen.","Free.","200 yen.","1000 yen."], a:0, ex:"100 yen each から。"},
+      {t:"mc", en:"A: Would you like some cake? B: (   )", q:"【4級・聞く/話す】自然な応答は？", ch:["Yes, please.","It was great.","At seven.","I'm sorry."], a:0, ex:"すすめには Yes, please.。"},
+      {t:"mc", q:"【4級・聞く】A: Let's meet at the station at three. B: OK, see you then. 質問: What time will they meet?", ch:["At three.","At two.","At four.","At five."], a:0, ex:"at three から。"}
+    ]},
+    "3":{ technique:[
+      {t:"mc", en:"A: I have a cold today. B: (   )", q:"【3級・聞く/話す】自然な応答は？", ch:["That's too bad. Take care.","Congratulations!","Here you are.","Yes, I do."], a:0, ex:"体調が悪い相手には That's too bad.。"},
+      {t:"mc", en:"A: Could you tell me the way to the post office? B: (   )", q:"【3級・聞く/話す】自然な応答は？", ch:["Sure. Go straight and turn left.","Yes, I did.","It's mine.","Thank you."], a:0, ex:"道案内には Sure＋指示。"},
+      {t:"mc", q:"【3級・読む】掲示: SCHOOL FESTIVAL / Oct 20 / Food tickets sold at the gate. 質問: Where are food tickets sold?", ch:["At the gate.","In the gym.","Online.","At the library."], a:0, ex:"sold at the gate から。"},
+      {t:"mc", q:"【3級・読む】Eメール: Thanks for the present! I really like the book you gave me. 質問: What did the writer receive?", ch:["A book.","A bike.","A cap.","A ticket."], a:0, ex:"the book you gave me から。"},
+      {t:"mc", q:"【3級・聞く】A: Are you free this afternoon? B: Sorry, I have to help my mother. 質問: What will B do this afternoon?", ch:["Help his mother.","Play soccer.","Go shopping.","Watch TV."], a:0, ex:"have to help my mother から。"},
+      {t:"mc", en:"A: How was the test? B: (   )", q:"【3級・聞く/話す】自然な応答は？", ch:["It was difficult, but I did my best.","Yes, I do.","It's mine.","At seven."], a:0, ex:"感想を述べる。"}
+    ]},
+    "pre2":{ technique:[
+      {t:"mc", en:"A: Do you have any plans after graduation? B: (   )", q:"【準2級・聞く/話す】自然な応答は？", ch:["I'm planning to study abroad.","Yes, I did.","It's over there.","Thank you."], a:0, ex:"予定を述べる。"},
+      {t:"mc", q:"【準2級・読む】長文: The volunteer club cleans the park every month. Last week, twenty students joined. 質問: How often does the club clean the park?", ch:["Every month.","Every day.","Once a year.","Every week."], a:0, ex:"every month から。"},
+      {t:"mc", en:"A: Would you mind helping me move this desk? B: (   )", q:"【準2級・聞く/話す】自然な応答は？", ch:["Of course not. Where to?","Yes, I did.","It's mine.","At seven."], a:0, ex:"Would you mind ～? の依頼には Of course not.（いいですよ）。"}
+    ]},
+    "pre2plus":{ technique:[
+      {t:"mc", en:"A: What's your view on school uniforms? B: (   )", q:"【準2+ 聞く/話す】意見を述べる応答は？", ch:["They save time, but limit individuality.","Yes, I wear.","It's over there.","Thank you."], a:0, ex:"長所と短所を入れて意見を述べる。"},
+      {t:"mc", q:"【準2+ 読む】長文: A recent study found that walking 30 minutes a day improves memory. 質問: What improves memory according to the study?", ch:["Walking 30 minutes a day.","Sleeping all day.","Eating sweets.","Watching TV."], a:0, ex:"walking 30 minutes a day から。"},
+      {t:"mc", en:"A: I'm worried about the presentation. B: (   )", q:"【準2+ 聞く/話す】自然な応答は？", ch:["Don't worry. You've practiced a lot.","Yes, I did.","It's mine.","Goodbye."], a:0, ex:"不安な相手をはげます応答。"}
+    ]},
+    "2":{ technique:[
+      {t:"mc", en:"A: What do you think about working abroad? B: (   )", q:"【2級・聞く/話す】意見を述べる応答は？", ch:["It's challenging, but it broadens your view.","Yes, I work.","It's over there.","Thank you."], a:0, ex:"意見＋理由・対比で述べる。"},
+      {t:"mc", q:"【2級・読む】長文: Electric cars are becoming popular because they produce less pollution. 質問: Why are electric cars becoming popular?", ch:["They produce less pollution.","They are cheap.","They are fast.","They are big."], a:0, ex:"because のあとが理由。"},
+      {t:"mc", en:"A: Could you go over this report for errors? B: (   )", q:"【2級・聞く/話す】依頼への応答は？", ch:["Sure, I'll check it now.","Yes, I did.","It's raining.","Goodbye."], a:0, ex:"go over＝点検する。依頼に応じる。"}
+    ]}
+  };
+  (function(){
+    for(var g in MORE4){ if(!BANK[g])BANK[g]={};
+      for(var ge in MORE4[g]){ if(!BANK[g][ge])BANK[g][ge]=[];
+        BANK[g][ge]=BANK[g][ge].concat(MORE4[g][ge]); } }
+  })();
 
   /* ============================ 採点ユーティリティ ============================ */
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
