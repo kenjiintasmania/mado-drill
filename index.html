@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.18 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.19 | 2026-06-18 JST -->
+<!--   v0.18→v0.19：新記録の星を白フチ化（★）で視認性UP。Enter操作を統一（未回答→判定/回答後→次へ、クリックも可）。不合格表示を「残念・・・不合格」に。 -->
 <!--   v0.17→v0.18：自己データを可視化。レベルバーに直近◯/最高✩/新記録☆。4技能ダイヤモンド型レーダー（単語/文法/4技能/読解）。 -->
 <!--   模試=全軸更新（新記録は大☆）、ジャンル訓練=測った軸のみ明るく他はダーク表示。記録は mado_radar_v1 に保存。 -->
 <!--   v0.16→v0.17：4級・準2級の長文を増量しバランス調整。長文読解 5:9 4:13 3:17 準2:14 準2+:10 2:10。パッセージ16本・総計478問。 -->
@@ -86,10 +87,10 @@
   .lb-cell.on{color:var(--ink);font-weight:800;}
   .levelbar.none .lb-track{filter:grayscale(.55) opacity(.55);}
   /* レベルバーの記録マーカー（直近◯ / 最高✩ / 新記録☆） */
-  .lb-star{position:absolute;top:50%;transform:translate(-50%,-55%);font-size:15px;color:#e8a200;z-index:2;
-    pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.35);}
-  .lb-bigstar{position:absolute;top:50%;transform:translate(-50%,-52%);font-size:26px;color:#ffce3a;z-index:3;
-    pointer-events:none;text-shadow:0 0 7px rgba(255,180,0,.85),0 1px 2px rgba(0,0,0,.4);
+  .lb-star{position:absolute;top:50%;transform:translate(-50%,-55%);font-size:16px;color:#e8a200;z-index:2;
+    pointer-events:none;-webkit-text-stroke:.6px #fff;paint-order:stroke;text-shadow:0 0 2px #fff,0 1px 2px rgba(0,0,0,.3);}
+  .lb-bigstar{position:absolute;top:50%;transform:translate(-50%,-52%);font-size:24px;color:#ffc400;z-index:3;
+    pointer-events:none;-webkit-text-stroke:3px #fff;paint-order:stroke;text-shadow:0 1px 2px rgba(0,0,0,.35);
     animation:starpop .55s cubic-bezier(.2,.9,.3,1.5);}
   @keyframes starpop{0%{transform:translate(-50%,-52%) scale(.2);opacity:0;}60%{transform:translate(-50%,-52%) scale(1.35);opacity:1;}100%{transform:translate(-50%,-52%) scale(1);opacity:1;}}
   /* 4技能レーダー */
@@ -103,11 +104,11 @@
   .radar text{text-anchor:middle;dominant-baseline:central;font-family:var(--jp);}
   .radar .rlab{font-size:12px;font-weight:800;fill:var(--ink);}
   .radar .rlab.dm{fill:var(--hint);opacity:.45;}
-  .radar .rstar{font-size:14px;fill:#e8a200;}
+  .radar .rstar{font-size:14px;fill:#e8a200;stroke:#fff;stroke-width:.6;paint-order:stroke;}
   .radar .rstar.dm{opacity:.18;}
   .radar .rdot{fill:var(--brand2);stroke:#fff;stroke-width:1.5;}
   .radar .rdot.dm{opacity:.18;}
-  .radar .rbig{font-size:23px;fill:#ffce3a;stroke:#e8a200;stroke-width:.5;}
+  .radar .rbig{font-size:24px;fill:#ffc400;stroke:#fff;stroke-width:3;paint-order:stroke;}
   .rlegend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--muted);margin:6px 0 2px;}
   .rlegend i{font-style:normal;}
   .lg-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--brand2);
@@ -314,7 +315,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.18";
+  var APP_VER = "v0.19";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1413,7 +1414,7 @@
       s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" class="rlab'+dm+'">'+a.name+'</text>';
       if(best[a.id]!=null){var q=radarPt(cx,cy,R,best[a.id],a.ang);s+='<text x="'+q[0].toFixed(1)+'" y="'+q[1].toFixed(1)+'" class="rstar'+dm+'">✩</text>';}
       if(rec[a.id]!=null){var q2=radarPt(cx,cy,R,rec[a.id],a.ang);s+='<circle cx="'+q2[0].toFixed(1)+'" cy="'+q2[1].toFixed(1)+'" r="3.6" class="rdot'+dm+'"/>';}
-      if(opt.newRec&&opt.newRec[a.id]){var v=(rec[a.id]!=null?rec[a.id]:best[a.id]),q3=radarPt(cx,cy,R,v,a.ang);s+='<text x="'+q3[0].toFixed(1)+'" y="'+q3[1].toFixed(1)+'" class="rbig">☆</text>';}
+      if(opt.newRec&&opt.newRec[a.id]){var v=(rec[a.id]!=null?rec[a.id]:best[a.id]),q3=radarPt(cx,cy,R,v,a.ang);s+='<text x="'+q3[0].toFixed(1)+'" y="'+q3[1].toFixed(1)+'" class="rbig">★</text>';}
     });
     return s+'</svg>';
   }
@@ -1448,7 +1449,7 @@
     var markers="";
     if(L!=null){
       var atPeak=(bestL==null)||(L>=bestL-1e-9);
-      if(atPeak){ markers='<span class="lb-bigstar" style="left:'+(L/8*100).toFixed(2)+'%">☆</span>'; }
+      if(atPeak){ markers='<span class="lb-bigstar" style="left:'+(L/8*100).toFixed(2)+'%">★</span>'; }
       else { markers='<span class="lb-star" style="left:'+(bestL/8*100).toFixed(2)+'%">✩</span>'+
                      '<span class="lb-pointer" style="left:'+(L/8*100).toFixed(2)+'%"></span>'; }
     }
@@ -1465,9 +1466,16 @@
           q:null, picked:-1, answered:false,
           recent:{},               // ジャンルごとの直近出題index（連続同問対策）
           session:null, dataFocus:null, dataBack:"home", dataNewRec:null,
+          check:null, advance:null,
           test:{mode:null, queue:[], idx:0, ok:0} };
   var app=document.getElementById("app");
   function $(id){return document.getElementById(id);}
+  // Enter統一：未回答ならEnterで判定（fill）、回答後はEnterで次へ（mc/fill共通・クリックも可）
+  document.addEventListener("keydown",function(e){
+    if(e.key!=="Enter")return;
+    if(!S.answered){ if(S.check){ e.preventDefault(); S.check(); } }
+    else { if(S.advance){ e.preventDefault(); S.advance(); } }
+  });
 
   function setLoop(active){
     var steps=document.querySelectorAll("#loop .step");
@@ -1555,6 +1563,7 @@
 
   function renderTrain(){
     setLoop("train");
+    S.check=null; S.advance=null;
     var gm=gradeMeta(S.grade);
     // この級にS.genreが無ければ、利用できる先頭ジャンルに切り替え
     var avail=availableGenres(S.grade);
@@ -1650,8 +1659,7 @@
         onResult(ok, r, '正答：<span class="en">'+enHTML(q.a)+'</span>');
       };
       $("ans").focus();
-      $("ans").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doCheck();}});
-      // 判定ボタンは actions 側に置く
+      S.check=doCheck;   // Enterで判定（クリックの「判定」ボタンも可）
       buildActions(isTest, doCheck);
     }else{
       var chs=document.querySelectorAll(".ch[data-i]");
@@ -1670,6 +1678,7 @@
         }
         onResult(ok, ok?"ok":"ng", '正答：<span class="'+(q.chJp?'':'en')+'">'+(q.chJp?esc(q.ch[q.a]):enHTML(q.ch[q.a]))+'</span>');
       });
+      S.check=null;
       buildActions(isTest, null);
     }
   }
@@ -1693,9 +1702,10 @@
     var exp=S.q.ex?'<div class="exp">'+enHTML(S.q.ex)+'</div>':'';
     $("fb").innerHTML='<div class="fbwrap">'+v+'<div class="ansrow">'+ansHTML+'</div>'+exp+'</div>';
     var wrap=$("tactions"); wrap.innerHTML='';
+    var adv=function(){S.q=null;pickQuestion();renderTrain();};
     var nx=document.createElement("button"); nx.className="act"; nx.textContent="次の問題 →";
-    nx.addEventListener("click",function(){S.q=null;pickQuestion();renderTrain();});
-    wrap.appendChild(nx);
+    nx.addEventListener("click",adv); wrap.appendChild(nx);
+    S.check=null; S.advance=adv;   // 採点後はEnterで次へ
     // 上部の正答率も更新
     var a=acc(S.grade,S.genre);
     var st=document.querySelector(".stat");
@@ -1741,6 +1751,7 @@
 
   function renderTest(){
     setLoop("test");
+    S.check=null; S.advance=null;
     var t=S.test;
     if(t.idx>=t.queue.length){return renderTestResult();}
     S.q=t.queue[t.idx]; S.answered=false; S.picked=-1;
@@ -1772,9 +1783,10 @@
     $("fb").innerHTML='<div class="fbwrap">'+v+'<div class="ansrow">'+ansHTML+'</div>'+exp+'</div>';
     var wrap=$("tactions"); wrap.innerHTML='';
     var last=(S.test.idx>=S.test.queue.length-1);
+    var adv=function(){S.test.idx++;go("test");};
     var nx=document.createElement("button"); nx.className="act"; nx.textContent=last?"結果を見る →":"次へ →";
-    nx.addEventListener("click",function(){S.test.idx++;go("test");});
-    wrap.appendChild(nx);
+    nx.addEventListener("click",adv); wrap.appendChild(nx);
+    S.check=null; S.advance=adv;
   }
   // テスト用：問題がどのジャンル由来か（正答率記録のため）
   function currentGenreOf(q){
@@ -1839,7 +1851,7 @@
         '<div class="ring-hole"><div class="ring-pct">'+pct+'%</div><div class="ring-cap">正答率</div></div>'+
       '</div>'+
       '<div class="rscore">正解 <b>'+t.ok+'</b> / '+total+' 問</div>'+
-      '<div class="passmark '+(pass?'pass':'fail')+'">'+(pass?'🎉 合格ライン突破！':'あと少し… 不合格')+'</div>'+
+      '<div class="passmark '+(pass?'pass':'fail')+'">'+(pass?'🎉 合格ライン突破！':'残念・・・不合格')+'</div>'+
       '<div class="threshold">合格基準：正答率65%以上（'+Math.ceil(total*PASS)+'問以上の正解で合格）</div>'+
       (rec.type==="weak"?'<div class="hint" style="margin-top:10px;">いまの苦手は <b style="color:'+rec.ge.c+'">'+esc(rec.ge.name)+'</b>（正答率 '+rec.pct+'%）。鍛えてもう一度ループを回そう。</div>':'')+
       (showRadar?('<div class="radar-wrap">'+radarSVG(S.grade,{newRec:radNew})+'</div>'+radarLegend()+'<div class="hint" style="margin-bottom:2px;">今回の4技能データ（直近◯・最高✩・新記録☆）</div>'):'')+
@@ -1870,6 +1882,7 @@
   /* ============================ ルーター ============================ */
   function go(screen){
     S.screen=screen;
+    S.check=null; S.advance=null;
     if(screen==="home")renderHome();
     else if(screen==="train")renderTrain();
     else if(screen==="testsetup")renderTestSetup();
