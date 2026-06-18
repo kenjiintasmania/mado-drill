@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.19 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.20 | 2026-06-18 JST -->
+<!--   v0.19→v0.20：レベルバーの最高(✩)を全級通算のグローバル最高位置に修正（旧級別ベストから自動移行）。直近◯＋最高✩が正しく併記。 -->
 <!--   v0.18→v0.19：新記録の星を白フチ化（★）で視認性UP。Enter操作を統一（未回答→判定/回答後→次へ、クリックも可）。不合格表示を「残念・・・不合格」に。 -->
 <!--   v0.17→v0.18：自己データを可視化。レベルバーに直近◯/最高✩/新記録☆。4技能ダイヤモンド型レーダー（単語/文法/4技能/読解）。 -->
 <!--   模試=全軸更新（新記録は大☆）、ジャンル訓練=測った軸のみ明るく他はダーク表示。記録は mado_radar_v1 に保存。 -->
@@ -315,7 +316,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.19";
+  var APP_VER = "v0.20";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1368,6 +1369,16 @@
   function saveRadar(r){try{localStorage.setItem(RADAR_KEY,JSON.stringify(r));}catch(e){}}
   function radarOf(all,g){all[g]=all[g]||{}; var d=all[g]; d.recent=d.recent||{}; d.best=d.best||{}; return d;}
   function bestLOf(grade){var d=loadRadar()[grade]; return d&&d.bestL!=null?d.bestL:null;}
+  // レベルバーの「最高(✩)」は全級を通じた最高位置（グローバル）で持つ
+  var BESTLEVEL_KEY="mado_bestlevel_v1";
+  function loadBestLevel(){
+    try{ var v=localStorage.getItem(BESTLEVEL_KEY); if(v!=null) return parseFloat(v);
+      var all=loadRadar(), mx=null;            // 旧データ（級別bestL）からの自動移行
+      for(var g in all){ if(LEVEL_ORDER.indexOf(g)>=0 && all[g] && all[g].bestL!=null){ if(mx==null||all[g].bestL>mx) mx=all[g].bestL; } }
+      return mx;
+    }catch(e){return null;}
+  }
+  function saveBestLevel(v){try{localStorage.setItem(BESTLEVEL_KEY,String(v));}catch(e){}}
   // 模試後：各軸の今回%を記録、ベスト更新。新記録の軸集合を返す
   function recordTestRadar(grade, byGenre){
     var all=loadRadar(), d=radarOf(all,grade), nr={};
@@ -1388,9 +1399,12 @@
     saveRadar(all); return rec;
   }
   function recordLevelRadar(grade, L){
-    var all=loadRadar(), d=radarOf(all,grade), rec=false; d.lastL=L;
-    if(d.bestL==null||L>d.bestL){ rec=true; d.bestL=L; }
-    saveRadar(all); return rec;
+    var gb=loadBestLevel(), rec=(gb==null||L>gb);                  // 先にグローバル最高で新記録判定
+    if(rec) saveBestLevel(L);
+    var all=loadRadar(), d=radarOf(all,grade); d.lastL=L;          // 級別（参考用）
+    if(d.bestL==null||L>d.bestL){ d.bestL=L; }
+    saveRadar(all);
+    return rec;
   }
   function radarPt(cx,cy,R,val,ang){var a=ang*Math.PI/180,r=R*(val||0)/100;return [cx+r*Math.cos(a), cy+r*Math.sin(a)];}
   function radarLegend(){return '<div class="rlegend"><span><i class="lg-dot"></i>直近</span><span><i class="lg-star">✩</i>最高</span><span><i class="lg-big">☆</i>新記録</span></div>';}
@@ -1438,7 +1452,7 @@
     var el=document.getElementById("levelbar"); if(!el) return;
     var lt=loadLastTest();
     var L=levelCoord();
-    var bestL=(lt && LEVEL_ORDER.indexOf(lt.grade)>=0)?bestLOf(lt.grade):null;
+    var bestL=loadBestLevel();   // 全級通じた最高位置
     var nearest = (L==null)? -1 : Math.round(L);
     var ticks="", scale="";
     for(var i=0;i<9;i++){
