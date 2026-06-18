@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.7 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.8 | 2026-06-18 JST -->
+<!--   v0.7→v0.8：7・6・5・準2・準2+・2級も増量（MORE3）。全級バランス化。総計367問。 -->
 <!--   v0.6→v0.7：3級・4級を中心に問題増量（MORE2）。3級70問・4級49問・全体250問。4技能別問題も拡充。 -->
 <!--   v0.5→v0.6：「大問テクニック」を「4技能別問題」に改名し、メタ（解き方のコツ）を採点ジャンルから除去→実戦問題に。 -->
 <!--   メタ学力は新モジュール「中学入学準備（使える英語学）」を6級と5級の間に新設し10問収録（級レベル判定には不使用）。 -->
@@ -238,7 +239,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.7";
+  var APP_VER = "v0.8";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -732,6 +733,192 @@
     for(var g in MORE2){ if(!BANK[g])BANK[g]={};
       for(var ge in MORE2[g]){ if(!BANK[g][ge])BANK[g][ge]=[];
         BANK[g][ge]=BANK[g][ge].concat(MORE2[g][ge]); } }
+  })();
+
+  // 追加問題（フェーズ③拡充2：7・6・5・準2・準2+・2級）
+  var MORE3 = {
+    "7":{
+      vocab:[
+        {t:"mc", q:"🐘 これを表す英語は？", ch:["elephant","cat","dog","bird"], a:0, ex:"elephant＝ぞう。"},
+        {t:"mc", q:"「黄色」を表す英語は？", ch:["yellow","blue","red","green"], a:0, ex:"yellow＝黄色。"},
+        {t:"fill", q:"「ねこ」を英語で書こう（c で始まる）。", a:"cat", ex:"cat＝ねこ。"},
+        {t:"mc", q:"数の「five」はいくつ？", ch:["5","3","4","9"], chJp:true, a:0, ex:"five＝5。"},
+        {t:"mc", q:"あいさつ「さようなら」は？", ch:["Goodbye.","Hello.","Thank you.","Sorry."], a:0, ex:"Goodbye.＝さようなら。"}
+      ],
+      grammar:[
+        {t:"mc", en:"(   ) are my friends.", q:"「彼らは友だちです」", ch:["They","He","She","It"], a:0, ex:"複数の主語 They＋are。"},
+        {t:"mc", en:"I (   ) a dog.", q:"「犬を飼っている」", ch:["have","has","am","is"], a:0, ex:"I have ～＝〜を持っている。"},
+        {t:"mc", en:"She (   ) happy.", q:"(   ) に入る語は？", ch:["is","am","are","be"], a:0, ex:"主語 She＋is。"},
+        {t:"mc", en:"(   ) this a pen?", q:"「これはペンですか？」", ch:["Is","Are","Do","Am"], a:0, ex:"this には Is。"},
+        {t:"mc", en:"I like (   ).", q:"「りんごが好き（複数）」", ch:["apples","apple","a apple","an apples"], a:0, ex:"数えられる名詞の一般論は複数形 apples。"}
+      ],
+      technique:[
+        {t:"mc", q:"【7級リーディング】🚗 走っている車に合う英文は？", ch:["The car is going.","The car is flying.","The car is eating.","The car is reading."], a:0, ex:"動作に合う文を選ぶ。"},
+        {t:"mc", q:"【7級リスニング】絵:🐦 質問『What is this?』 答えは？", ch:["It's a bird.","It's a fish.","It's a dog.","It's a cat."], a:0, ex:"絵についての質問。bird。"},
+        {t:"mc", q:"【7級リーディング】絵:📕赤い本 に合う英文は？", ch:["This is a red book.","This is a blue book.","This is a red cup.","This is a red pen."], a:0, ex:"色（red）と物（book）が両方合うもの。"},
+        {t:"mc", q:"【7級リスニング】絵:👦走っている男の子 質問『What is the boy doing?』", ch:["He is running.","He is eating.","He is sleeping.","He is swimming."], a:0, ex:"動作を答える。running。"}
+      ],
+      practice:[
+        {t:"mc", en:"(   ) is this? — It's a cat.", q:"(   ) に入る語は？", ch:["What","Who","Where","When"], a:0, ex:"物をたずねる What。"},
+        {t:"mc", en:"How (   ) apples? — Three.", q:"(   ) に入る語は？", ch:["many","much","old","long"], a:0, ex:"数をたずねる How many。"},
+        {t:"mc", q:"絵:🍌2本のバナナ に合う英文は？", ch:["These are two bananas.","This is a banana.","These are two apples.","This is two banana."], a:0, ex:"複数 These are two ～s。"},
+        {t:"mc", en:"(   ) you like dogs? — Yes, I do.", q:"(   ) に入る語は？", ch:["Do","Are","Is","Does"], a:0, ex:"一般動詞 like の疑問文、主語 you → Do。"}
+      ]
+    },
+    "6":{
+      vocab:[
+        {t:"mc", q:"「夕食」は？", ch:["dinner","breakfast","lunch","snack"], a:0, ex:"dinner＝夕食。"},
+        {t:"mc", q:"「教室」は？", ch:["classroom","kitchen","garden","station"], a:0, ex:"classroom＝教室。"},
+        {t:"fill", q:"「先生」を英語で（t で始まる）。", a:"teacher", ex:"teacher＝先生。"},
+        {t:"mc", q:"「水曜日」は？", ch:["Wednesday","Tuesday","Thursday","Monday"], a:0, ex:"Wednesday＝水曜日。"},
+        {t:"mc", q:"「いそがしい」は？", ch:["busy","easy","happy","early"], a:0, ex:"busy＝いそがしい。"},
+        {t:"fill", q:"「町」を英語で（t で始まる）。", a:"town", ex:"town＝町。"}
+      ],
+      grammar:[
+        {t:"mc", en:"She (   ) TV every evening.", q:"(   ) に入る語は？", ch:["watches","watch","watching","watched"], a:0, ex:"三人称単数＋習慣 → watches。"},
+        {t:"mc", en:"(   ) does he go to school? — By bike.", q:"(   ) に入る語は？", ch:["How","What","Who","When"], a:0, ex:"手段をたずねる How。"},
+        {t:"mc", en:"I don't have (   ) money.", q:"(   ) に入る語は？", ch:["any","some","much of","a"], a:0, ex:"否定文では any。"},
+        {t:"mc", en:"They are (   ) lunch now.", q:"(   ) に入る語は？", ch:["having","have","has","had"], a:0, ex:"now＋are → 現在進行形 having。"},
+        {t:"mc", en:"Let's (   ) to the park.", q:"(   ) に入る語は？", ch:["go","goes","going","went"], a:0, ex:"Let's＋原形。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: Nice to meet you.", q:"【6級リスニング】自然な応答は？", ch:["Nice to meet you, too.","You're welcome.","It's a dog.","Yes, I do."], a:0, ex:"はじめましてのあいさつを返す。"},
+        {t:"mc", q:"【6級リーディング】“I have a small white rabbit.” 内容に合う絵は？", ch:["小さい白いうさぎ","大きい黒い犬","白いねこ","小さい茶色のうさぎ"], chJp:true, a:0, ex:"色（white）と大きさ（small）が合う絵。"},
+        {t:"mc", en:"A: See you tomorrow.", q:"【6級リスニング】自然な応答は？", ch:["See you.","Here you are.","I'm twelve.","No, thank you."], a:0, ex:"別れのあいさつ See you. を返す。"},
+        {t:"mc", en:"A: What time is it?", q:"【6級リスニング】自然な応答は？", ch:["It's seven o'clock.","I'm fine.","Yes, I do.","It's a cat."], a:0, ex:"時刻をたずねられたら時刻で答える。"}
+      ],
+      practice:[
+        {t:"mc", en:"(   ) is your birthday? — In May.", q:"(   ) に入る語は？", ch:["When","Where","Who","What"], a:0, ex:"時をたずねる When。"},
+        {t:"mc", en:"There (   ) some books on the desk.", q:"(   ) に入る語は？", ch:["are","is","am","be"], a:0, ex:"some books（複数）→ There are。"},
+        {t:"mc", en:"He can (   ) very fast.", q:"(   ) に入る語は？", ch:["run","runs","running","ran"], a:0, ex:"can のあとは原形 run。"},
+        {t:"mc", en:"(   ) that your bag? — Yes, it is.", q:"(   ) に入る語は？", ch:["Is","Are","Do","Does"], a:0, ex:"that には Is。"}
+      ]
+    },
+    "5":{
+      vocab:[
+        {t:"mc", q:"「おもしろい・興味深い」は？", ch:["interesting","boring","angry","tired"], a:0, ex:"interesting＝おもしろい。"},
+        {t:"mc", q:"「むずかしい」は？", ch:["difficult","easy","kind","fast"], a:0, ex:"difficult＝むずかしい。"},
+        {t:"mc", q:"「台所」は？", ch:["kitchen","garden","station","library"], a:0, ex:"kitchen＝台所。"},
+        {t:"fill", q:"「数学」を英語で（m で始まる）。", a:"math", ac:["mathematics"], ex:"math＝数学。"},
+        {t:"mc", q:"「速い」は？", ch:["fast","slow","late","early"], a:0, ex:"fast＝速い。"},
+        {t:"fill", q:"「音楽」を英語で（m で始まる）。", a:"music", ex:"music＝音楽。"},
+        {t:"mc", q:"「姉・妹」は？", ch:["sister","brother","mother","father"], a:0, ex:"sister＝姉・妹。"}
+      ],
+      grammar:[
+        {t:"mc", en:"I (   ) breakfast at seven every day.", q:"(   ) に入る語は？", ch:["have","has","having","had"], a:0, ex:"主語 I＋習慣 → have。"},
+        {t:"mc", en:"(   ) she play the piano? — Yes, she does.", q:"(   ) に入る語は？", ch:["Does","Do","Is","Are"], a:0, ex:"三人称単数の一般動詞疑問文 Does。"},
+        {t:"mc", en:"We (   ) not in the same class.", q:"(   ) に入る語は？", ch:["are","is","am","do"], a:0, ex:"主語 We → are not。"},
+        {t:"mc", en:"Tom and I (   ) good friends.", q:"(   ) に入る語は？", ch:["are","is","am","be"], a:0, ex:"複数主語 → are。"},
+        {t:"mc", en:"Please (   ) quiet.", q:"(   ) に入る語は？", ch:["be","is","are","being"], a:0, ex:"命令文の be動詞は原形 be。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: How are you?", q:"【5級・聞く/話す】自然な応答は？", ch:["I'm fine, thank you.","It's mine.","Yes, I do.","At seven."], a:0, ex:"体調をたずねる定番のやりとり。"},
+        {t:"mc", en:"A: This is my friend, Ken.", q:"【5級・聞く/話す】自然な応答は？", ch:["Nice to meet you.","You're welcome.","Here you are.","I'm sorry."], a:0, ex:"紹介には Nice to meet you.。"},
+        {t:"mc", en:"A: What's this?", q:"【5級・聞く/話す】自然な応答は？", ch:["It's a notebook.","Yes, it is.","I'm twelve.","At three."], a:0, ex:"What's this? には It's ～. で答える。"},
+        {t:"mc", en:"A: Happy birthday!", q:"【5級・聞く/話す】自然な応答は？", ch:["Thank you!","That's too bad.","No, thank you.","Pardon?"], a:0, ex:"お祝いには Thank you!。"}
+      ],
+      practice:[
+        {t:"mc", en:"I go to school (   ) bus.", q:"(   ) に入る語は？", ch:["by","on","in","with"], a:0, ex:"交通手段は by bus。"},
+        {t:"mc", en:"(   ) are you from? — I'm from Osaka.", q:"(   ) に入る語は？", ch:["Where","What","Who","When"], a:0, ex:"出身をたずねる Where。"},
+        {t:"mc", en:"She has a cat. (   ) name is Tama.", q:"(   ) に入る語は？", ch:["Its","It's","Her","His"], a:0, ex:"動物の所有 Its（its＝それの）。"},
+        {t:"mc", en:"Let's play tennis (   ) Sunday.", q:"(   ) に入る語は？", ch:["on","in","at","to"], a:0, ex:"曜日の前は on。"}
+      ]
+    },
+    "pre2":{
+      vocab:[
+        {t:"mc", en:"He decided to (   ) the meeting.", q:"(   ) に入る語は？", ch:["attend","arrive","belong","prepare"], a:0, ex:"attend＝出席する。"},
+        {t:"mc", en:"We should (   ) the environment for the future.", q:"(   ) に入る語は？", ch:["protect","waste","spend","borrow"], a:0, ex:"protect＝守る。"},
+        {t:"fill", q:"「機会・チャンス」を英語で（o で始まる）。", a:"opportunity", ex:"opportunity＝機会。"},
+        {t:"mc", en:"Her speech made a strong (   ) on me.", q:"(   ) に入る語は？", ch:["impression","invitation","information","instruction"], a:0, ex:"make an impression＝印象を与える。"},
+        {t:"fill", q:"「目標」を英語で（g で始まる）。", a:"goal", ex:"goal＝目標。"},
+        {t:"mc", en:"The store (   ) a wide variety of goods.", q:"(   ) に入る語は？", ch:["offers","arrives","belongs","depends"], a:0, ex:"offer＝提供する。"}
+      ],
+      grammar:[
+        {t:"mc", en:"I'm looking forward to (   ) you again.", q:"(   ) に入る語は？", ch:["seeing","see","saw","seen"], a:0, ex:"look forward to ＋動名詞。"},
+        {t:"mc", en:"He suggested (   ) a break.", q:"(   ) に入る語は？", ch:["taking","to take","take","took"], a:0, ex:"suggest ＋動名詞。"},
+        {t:"mc", en:"The book (   ) I bought yesterday is interesting.", q:"(   ) に入る語は？", ch:["that","who","whose","what"], a:0, ex:"物を説明する関係代名詞 that。"},
+        {t:"mc", en:"She works hard (   ) to pass the exam.", q:"(   ) に入る語は？", ch:["in order","so that","because","such"], a:0, ex:"in order to＋原形＝〜するために。"},
+        {t:"mc", en:"It was such a nice day (   ) we went hiking.", q:"(   ) に入る語は？", ch:["that","as","than","so"], a:0, ex:"such ～ that …＝とても〜なので…。"},
+        {t:"mc", en:"If I were you, I (   ) study harder.", q:"(   ) に入る語は？", ch:["would","will","am","do"], a:0, ex:"仮定法 If I were you, I would ～。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: Have you finished the report? B: (   )", q:"【準2級・聞く/話す】自然な応答は？", ch:["Almost. I need ten more minutes.","Yes, I am.","It's over there.","You're welcome."], a:0, ex:"進捗をたずねられて現状を答える。"},
+        {t:"mc", q:"【準2級・読む】Eメール: I'd love to join the trip. What should I bring? 質問: What does the writer ask?", ch:["What to bring.","When to leave.","Who will come.","Where to meet."], a:0, ex:"What should I bring? が質問。"},
+        {t:"mc", en:"A: Do you mind if I open the window? B: (   )", q:"【準2級・聞く/話す】許可を求められた応答は？", ch:["Not at all. Go ahead.","Yes, I did.","It's mine.","At seven."], a:0, ex:"Do you mind ～? の許可には Not at all.（どうぞ）。"},
+        {t:"mc", q:"【準2級・聞く】A: I can't decide which club to join. B: How about the science club? 質問: What does B suggest?", ch:["Joining the science club.","Quitting school.","Buying a book.","Going home."], a:0, ex:"How about ～? は提案。"},
+        {t:"mc", q:"【準2級・読む】長文: Students said the new library was useful because it had many study rooms. 質問: Why is the new library useful?", ch:["It has many study rooms.","It is far away.","It is closed.","It is small."], a:0, ex:"because のあとが理由。"}
+      ],
+      practice:[
+        {t:"mc", en:"Thanks (   ) your help, we finished early.", q:"(   ) に入る語は？", ch:["to","for","of","with"], a:0, ex:"Thanks to ～＝〜のおかげで。"},
+        {t:"mc", en:"He is responsible (   ) the project.", q:"(   ) に入る語は？", ch:["for","to","of","at"], a:0, ex:"be responsible for＝〜に責任がある。"},
+        {t:"mc", en:"I'm used to (   ) early.", q:"(   ) に入る語は？", ch:["getting up","get up","got up","gets up"], a:0, ex:"be used to ＋動名詞＝〜に慣れている。"},
+        {t:"mc", q:"英文: She moved to London to study art three years ago. 質問: Why did she move to London?", ch:["To study art.","To find a job.","To meet friends.","To play music."], a:0, ex:"to study art（目的）。"}
+      ]
+    },
+    "pre2plus":{
+      vocab:[
+        {t:"mc", en:"The new system will (   ) efficiency.", q:"(   ) に入る語は？", ch:["enhance","reduce","delay","ignore"], a:0, ex:"enhance＝高める。"},
+        {t:"mc", en:"We must (   ) limited resources wisely.", q:"(   ) に入る語は？", ch:["manage","waste","ignore","delay"], a:0, ex:"manage＝管理する。"},
+        {t:"fill", q:"「影響」を英語で（i で始まる）。", a:"influence", ex:"influence＝影響。"},
+        {t:"mc", en:"The data (   ) a clear trend.", q:"(   ) に入る語は？", ch:["indicates","invites","arrives","belongs"], a:0, ex:"indicate＝示す。"},
+        {t:"fill", q:"「達成する」を英語で（a で始まる）。", a:"achieve", ex:"achieve a goal＝目標を達成する。"}
+      ],
+      grammar:[
+        {t:"mc", en:"(   ) finishing the work, she went home.", q:"(   ) に入る語は？", ch:["After","During","While","Since"], a:0, ex:"After＋動名詞＝〜したあとで。"},
+        {t:"mc", en:"The project, (   ) took two years, was a success.", q:"(   ) に入る語は？", ch:["which","who","whose","what"], a:0, ex:"物を補足説明する関係代名詞 which。"},
+        {t:"mc", en:"He insisted on (   ) the bill.", q:"(   ) に入る語は？", ch:["paying","to pay","pay","paid"], a:0, ex:"insist on ＋動名詞。"},
+        {t:"mc", en:"Hardly (   ) when it started to rain.", q:"(   ) に入る語は？", ch:["had we arrived","we arrived","we had arrived","arrived we"], a:0, ex:"否定語が文頭→倒置 Hardly had we arrived。"},
+        {t:"mc", en:"It is high time we (   ) action.", q:"(   ) に入る語は？", ch:["took","take","takes","taking"], a:0, ex:"It is high time＋仮定法過去（took）。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: What's your opinion on remote work? B: (   )", q:"【準2+ 聞く/話す】意見を述べる応答は？", ch:["I think it improves work-life balance.","Yes, I work.","It's over there.","No problem."], a:0, ex:"意見を求められたら理由つきで述べる。"},
+        {t:"mc", q:"【準2+ 読む】長文: The survey shows that students who sleep well perform better. 質問: What helps students perform better?", ch:["Sleeping well.","Skipping meals.","Studying all night.","Watching TV."], a:0, ex:"who sleep well の部分が答え。"},
+        {t:"mc", en:"A: I'm thinking of studying abroad. B: (   )", q:"【準2+ 聞く/話す】自然な応答は？", ch:["That's a great idea. Where to?","Yes, I did.","It's mine.","Goodbye."], a:0, ex:"計画に関心を示して質問を返す。"},
+        {t:"mc", q:"【準2+ 聞く】A: Should we take the bus or the train? B: The train is faster, so let's take it. 質問: What will they take?", ch:["The train.","The bus.","A taxi.","A bike."], a:0, ex:"let's take it の it＝the train。"}
+      ],
+      practice:[
+        {t:"mc", en:"(   ) the bad weather, the flight was delayed.", q:"(   ) に入る語は？", ch:["Due to","Because","Although","So"], a:0, ex:"Due to＋名詞＝〜のために。"},
+        {t:"mc", en:"Not only is he smart, (   ) he is kind.", q:"(   ) に入る語は？", ch:["but also","and also","so also","or"], a:0, ex:"not only A but also B。"},
+        {t:"mc", en:"The more you practice, (   ) you become.", q:"(   ) に入る語は？", ch:["the better","better","the best","more good"], a:0, ex:"The 比較級 ～, the 比較級 …。"},
+        {t:"mc", q:"英文: The company introduced a new policy to reduce overtime. 質問: Why did the company introduce the policy?", ch:["To reduce overtime.","To increase sales.","To hire more staff.","To save paper."], a:0, ex:"to reduce overtime（目的）。"}
+      ]
+    },
+    "2":{
+      vocab:[
+        {t:"mc", en:"The government plans to (   ) taxes next year.", q:"(   ) に入る語は？", ch:["raise","arrive","belong","attend"], a:0, ex:"raise＝引き上げる。"},
+        {t:"mc", en:"Regular exercise can (   ) the risk of disease.", q:"(   ) に入る語は？", ch:["reduce","arrive","belong","attend"], a:0, ex:"reduce the risk＝危険を減らす。"},
+        {t:"fill", q:"「効果的な」を英語で（e で始まる）。", a:"effective", ex:"effective＝効果的な。"},
+        {t:"mc", en:"Scientists made an important (   ).", q:"(   ) に入る語は？", ch:["discovery","invitation","instruction","impression"], a:0, ex:"discovery＝発見。"},
+        {t:"fill", q:"「経済」を英語で（e で始まる）。", a:"economy", ex:"economy＝経済。"},
+        {t:"mc", en:"The article (   ) several solutions.", q:"(   ) に入る語は？", ch:["suggests","arrives","belongs","depends"], a:0, ex:"suggest＝提案する・示す。"}
+      ],
+      grammar:[
+        {t:"mc", en:"The bridge (   ) last year is very long.", q:"(   ) に入る語は？", ch:["built","build","building","builds"], a:0, ex:"名詞を後置修飾する過去分詞 built。"},
+        {t:"mc", en:"I'd rather stay home (   ) go out.", q:"(   ) に入る語は？", ch:["than","then","as","that"], a:0, ex:"would rather A than B。"},
+        {t:"mc", en:"He talks as though he (   ) an expert.", q:"(   ) に入る語は？", ch:["were","is","be","being"], a:0, ex:"as though＋仮定法過去 were。"},
+        {t:"mc", en:"(   ) of the two answers is correct.", q:"(   ) に入る語は？", ch:["Neither","No","None","Both is"], a:0, ex:"Neither of＋単数扱い＝どちらも〜ない。"},
+        {t:"mc", en:"It is necessary that everyone (   ) present.", q:"(   ) に入る語は？", ch:["be","is","was","being"], a:0, ex:"necessary that＋(should) be → 原形 be。"},
+        {t:"mc", en:"Having finished the work, he (   ) home.", q:"(   ) に入る語は？", ch:["went","go","gone","going"], a:0, ex:"分詞構文。主節は went。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: What do you think about social media? B: (   )", q:"【2級・聞く/話す】意見を述べる応答は？", ch:["It connects people, but it can spread false news.","Yes, I use.","It's over there.","Thank you."], a:0, ex:"長所と短所を入れて意見を述べる。"},
+        {t:"mc", q:"【2級・読む】長文: Online shopping is convenient, but some worry about security. 質問: What is a concern about online shopping?", ch:["Security.","Speed.","Color.","Weather."], a:0, ex:"worry about security から。"},
+        {t:"mc", en:"A: Could you recommend a good book? B: (   )", q:"【2級・聞く/話す】依頼への応答は？", ch:["Sure. This novel is really moving.","Yes, I did.","It's raining.","Goodbye."], a:0, ex:"おすすめを求められたら具体的に答える。"},
+        {t:"mc", q:"【2級・聞く】A: The meeting is at 3, right? B: Actually, it was moved to 4. 質問: What time is the meeting?", ch:["At 4.","At 3.","At 5.","At 2."], a:0, ex:"moved to 4＝4時に変更。"},
+        {t:"mc", q:"【2級・読む】長文: The author argues that reading fiction improves empathy. 質問: What is the author's main point?", ch:["Fiction improves empathy.","Fiction is boring.","Reading wastes time.","Empathy is useless."], a:0, ex:"argues that のあとが主張。"}
+      ],
+      practice:[
+        {t:"mc", en:"The plan failed (   ) lack of money.", q:"(   ) に入る語は？", ch:["because of","because","so","although"], a:0, ex:"because of＋名詞。"},
+        {t:"mc", en:"She is capable (   ) solving hard problems.", q:"(   ) に入る語は？", ch:["of","to","in","at"], a:0, ex:"be capable of ＋動名詞。"},
+        {t:"mc", en:"(   ) it was raining, we went out.", q:"(   ) に入る語は？", ch:["Although","Because","So","Due to"], a:0, ex:"Although＝〜だけれども（逆接）。"},
+        {t:"mc", q:"英文: He took an umbrella because the sky looked cloudy. 質問: Why did he take an umbrella?", ch:["The sky looked cloudy.","It was sunny.","He was cold.","He lost it."], a:0, ex:"because のあとが理由。"}
+      ]
+    }
+  };
+  (function(){
+    for(var g in MORE3){ if(!BANK[g])BANK[g]={};
+      for(var ge in MORE3[g]){ if(!BANK[g][ge])BANK[g][ge]=[];
+        BANK[g][ge]=BANK[g][ge].concat(MORE3[g][ge]); } }
   })();
 
   // 中学入学準備（メタ学力／使える英語学）— 級レベル判定には使わない学習モジュール
