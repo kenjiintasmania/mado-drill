@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.21 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.22 | 2026-06-18 JST -->
+<!--   v0.21→v0.22：最高マーカーを「白抜き・黒外枠の星★」に（円ではなく星形のまま）。直近=青リング◯／最高=白黒の星★。 -->
 <!--   v0.20→v0.21：レベルバーの最高マーカーを◯と同サイズの白抜き・黒外枠の円に変更（直近=青リング／最高=黒リングで区別）。 -->
 <!--   v0.19→v0.20：レベルバーの最高(✩)を全級通算のグローバル最高位置に修正（旧級別ベストから自動移行）。直近◯＋最高✩が正しく併記。 -->
 <!--   v0.18→v0.19：新記録の星を白フチ化（★）で視認性UP。Enter操作を統一（未回答→判定/回答後→次へ、クリックも可）。不合格表示を「残念・・・不合格」に。 -->
@@ -84,9 +85,9 @@
   .lb-pointer{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
     background:#fff;border:2.5px solid var(--brand);box-shadow:0 1px 5px rgba(0,0,0,.35);
     transition:left .45s cubic-bezier(.3,.9,.3,1);z-index:2;}
-  .lb-best{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
-    background:#fff;border:2.5px solid #111;box-shadow:0 1px 4px rgba(0,0,0,.3);z-index:1;
-    transition:left .45s cubic-bezier(.3,.9,.3,1);}
+  .lb-best{position:absolute;top:50%;left:0;transform:translate(-50%,-55%);font-size:18px;line-height:1;z-index:1;
+    color:#fff;-webkit-text-stroke:1.6px #000;paint-order:stroke;pointer-events:none;
+    text-shadow:0 1px 1px rgba(0,0,0,.25);transition:left .45s cubic-bezier(.3,.9,.3,1);}
   .lb-scale{position:relative;height:13px;margin-top:5px;}
   .lb-cell{position:absolute;top:0;font-size:9.5px;color:var(--hint);line-height:1.1;white-space:nowrap;}
   .lb-cell.on{color:var(--ink);font-weight:800;}
@@ -320,7 +321,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.21";
+  var APP_VER = "v0.22";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1468,7 +1469,7 @@
     if(L!=null){
       var atPeak=(bestL==null)||(L>=bestL-1e-9);
       if(atPeak){ markers='<span class="lb-bigstar" style="left:'+(L/8*100).toFixed(2)+'%">★</span>'; }
-      else { markers='<span class="lb-best" style="left:'+(bestL/8*100).toFixed(2)+'%"></span>'+
+      else { markers='<span class="lb-best" style="left:'+(bestL/8*100).toFixed(2)+'%">★</span>'+
                      '<span class="lb-pointer" style="left:'+(L/8*100).toFixed(2)+'%"></span>'; }
     }
     el.className="levelbar"+(L==null?" none":"");
