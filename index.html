@@ -1,4 +1,6 @@
-<!-- mado_loop.html | v0.15 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.16 | 2026-06-18 JST -->
+<!--   v0.15→v0.16：長文をさらに追加。5級(Emmaの学校)・2級(食品ロス)・準2+(睡眠と健康)。パッセージ計12本・総計459問。 -->
+<!--   方針：判定テストは全ジャンル公平に出題（苦手重点モードは採用しない）。 -->
 <!--   v0.14→v0.15：長文をさらに追加。5級(Kenの一日)・2級(AI)・準2+(プラスチック問題)に長文読解を新設。パッセージ計9本・総計444問。 -->
 <!--   v0.13→v0.14：長文パッセージを追加（計6本）。3級に内容一致型の作文・Eメール読解、4級・準2級にも長文読解を新設。総計430問。 -->
 <!--   v0.12→v0.13：判定テスト結果に「苦手を鍛える」導線を追加。成績の先生へ送信（GAS連携）を統合。 -->
@@ -280,7 +282,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.15";
+  var APP_VER = "v0.16";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1027,6 +1029,21 @@
       "Plastic is cheap, light, and useful, so it is used in many products. However, plastic waste has become a serious problem around the world. A lot of plastic ends up in the ocean, where it harms fish and other sea animals.",
       "To solve this problem, some countries have banned plastic bags. Many shops now ask customers to bring their own bags. Companies are also developing new materials that break down naturally and do not stay in the environment for a long time.",
       "However, these efforts are not enough by themselves. Each of us can help by reducing the plastic we use and by recycling. Small changes in our daily lives can make a big difference for the planet."
+    ]},
+    emma:{ title:"Emma の学校", paras:[
+      "I am Emma. I am a junior high school student. My school is near my house.",
+      "I have four classes in the morning and two classes in the afternoon. My favorite subject is science. We do many experiments.",
+      "I am in the tennis club. We practice on Mondays, Wednesdays, and Fridays. My friend Lisa is in the same club. We always go home together."
+    ]},
+    food_waste:{ title:"長文：食品ロスの問題", paras:[
+      "Every year, a large amount of food is thrown away around the world. This problem is called food loss. In some countries, restaurants and supermarkets throw away food that is still safe to eat, simply because it does not look perfect.",
+      "Food loss causes several problems. Producing food uses a lot of water, energy, and land. When food is wasted, all of these resources are wasted too. In addition, rotting food in landfills produces gases that are bad for the environment.",
+      "There are several ways to reduce food loss. Stores can sell imperfect vegetables at lower prices. Restaurants can offer smaller portions. At home, we can plan our meals and use leftovers. If everyone makes an effort, we can save both food and money."
+    ]},
+    sleep:{ title:"長文：睡眠と健康", paras:[
+      "Many young people today do not get enough sleep. They often stay up late to study or to use their smartphones. However, sleep is very important for both the body and the mind.",
+      "During sleep, the body repairs itself and the brain organizes the things we learned during the day. Studies show that students who sleep well remember information better and feel less stressed. On the other hand, a lack of sleep can lead to poor concentration and even health problems.",
+      "Experts recommend several habits for better sleep. We should go to bed at the same time every night and avoid bright screens before sleeping. A short walk or light reading can also help. By taking sleep seriously, we can improve both our health and our study results."
     ]}
   };
   // 3級「長文読解」ジャンル（答えはすべて本文中にある抜き出し型）
@@ -1084,6 +1101,27 @@
     {t:"mc", p:"plastic", q:"質問: What are companies developing?", ch:["New materials that break down naturally.","Bigger plastic bags.","Faster cars.","New phones."], a:0, ex:"第2段落 new materials that break down naturally。"},
     {t:"mc", p:"plastic", q:"質問: What can each of us do?", ch:["Reduce plastic use and recycle.","Use more plastic.","Throw waste in the sea.","Do nothing."], a:0, ex:"第3段落 reducing the plastic we use and by recycling。"}
   ];
+  BANK["5"].reading = BANK["5"].reading.concat([
+    {t:"mc", p:"emma", q:"質問: Where is Emma's school?", ch:["Near her house.","In another city.","Next to the station.","By the sea."], a:0, ex:"第1段落 My school is near my house。"},
+    {t:"mc", p:"emma", q:"質問: How many classes does Emma have in the morning?", ch:["Four.","Two.","Six.","One."], a:0, ex:"第2段落 four classes in the morning。"},
+    {t:"mc", p:"emma", q:"質問: What is Emma's favorite subject?", ch:["Science.","Math.","Music.","History."], a:0, ex:"第2段落 My favorite subject is science。"},
+    {t:"mc", p:"emma", q:"質問: When does the tennis club practice?", ch:["On Mondays, Wednesdays, and Fridays.","Every day.","On weekends.","On Sundays only."], a:0, ex:"第3段落 practice on Mondays, Wednesdays, and Fridays。"},
+    {t:"mc", p:"emma", q:"質問: Who goes home with Emma?", ch:["Lisa.","Her brother.","Her teacher.","Nobody."], a:0, ex:"第3段落 Lisa is in the same club. We always go home together。"}
+  ]);
+  BANK["2"].reading = BANK["2"].reading.concat([
+    {t:"mc", p:"food_waste", q:"質問: Why do some stores throw away safe food?", ch:["Because it does not look perfect.","Because it is too expensive.","Because no one buys food.","Because it is poisonous."], a:0, ex:"第1段落 because it does not look perfect。"},
+    {t:"mc", p:"food_waste", q:"質問: What resources are wasted when food is wasted?", ch:["Water, energy, and land.","Only money.","Only time.","Nothing."], a:0, ex:"第2段落 water, energy, and land。"},
+    {t:"mc", p:"food_waste", q:"質問: What do rotting foods in landfills produce?", ch:["Gases bad for the environment.","Clean water.","Useful energy.","Fresh air."], a:0, ex:"第2段落 produces gases that are bad for the environment。"},
+    {t:"mc", p:"food_waste", q:"質問: What can stores do to reduce food loss?", ch:["Sell imperfect vegetables at lower prices.","Throw away more food.","Close earlier.","Raise prices."], a:0, ex:"第3段落 sell imperfect vegetables at lower prices。"},
+    {t:"mc", p:"food_waste", q:"質問: What can we do at home?", ch:["Plan meals and use leftovers.","Buy more than we need.","Cook only big portions.","Skip meals."], a:0, ex:"第3段落 plan our meals and use leftovers。"}
+  ]);
+  BANK["pre2plus"].reading = BANK["pre2plus"].reading.concat([
+    {t:"mc", p:"sleep", q:"質問: Why do many young people not get enough sleep?", ch:["They stay up late to study or use smartphones.","They wake up too late.","They sleep too much.","They have no homework."], a:0, ex:"第1段落 stay up late to study or to use their smartphones。"},
+    {t:"mc", p:"sleep", q:"質問: What does the brain do during sleep?", ch:["It organizes the things we learned.","It stops completely.","It forgets everything.","It grows bigger."], a:0, ex:"第2段落 the brain organizes the things we learned。"},
+    {t:"mc", p:"sleep", q:"質問: What can a lack of sleep cause?", ch:["Poor concentration and health problems.","Better memory.","More energy.","Less stress."], a:0, ex:"第2段落 a lack of sleep can lead to poor concentration and health problems。"},
+    {t:"mc", p:"sleep", q:"質問: What do experts recommend before sleeping?", ch:["Avoiding bright screens.","Drinking coffee.","Playing video games.","Studying all night."], a:0, ex:"第3段落 avoid bright screens before sleeping。"},
+    {t:"mc", p:"sleep", q:"質問: What is the benefit of taking sleep seriously?", ch:["Better health and study results.","More free time only.","Nothing changes.","Worse grades."], a:0, ex:"第3段落 improve both our health and our study results。"}
+  ]);
 
   // 追加問題（拡充3：使える英語学+10、4技能別問題を全級拡充）
   var MORE4 = {
