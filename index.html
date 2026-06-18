@@ -1,6 +1,7 @@
-<!-- mado_loop.html | v0.5 | 2026-06-18 JST -->
-<!--   v0.4→v0.5：問題数を増量（全8級）。3級は教材から厚く（計51問）。追加分はMOREにまとめBANKへ連結。 -->
-<!--   現状の収録数：3級51 / 7級27 / 6級23 / 5級21 / 4級21 / 準2級19 / 2級19 / 準2+14。 -->
+<!-- mado_loop.html | v0.6 | 2026-06-18 JST -->
+<!--   v0.5→v0.6：「大問テクニック」を「4技能別問題」に改名し、メタ（解き方のコツ）を採点ジャンルから除去→実戦問題に。 -->
+<!--   メタ学力は新モジュール「中学入学準備（使える英語学）」を6級と5級の間に新設し10問収録（級レベル判定には不使用）。 -->
+<!--   級ごとに構成が異なってもOKなようavailableGenresで存在するジャンルのみ表示。 -->
 <!--   v0.2→v0.3：準2級・準2級プラスを追加（全8級）。選択肢の表示順をランダム化（正答が①固定の罠を解消）。 -->
 <!--   ヘッダに「いまの目安：英検◯級レベル」を直近の判定テスト結果から算出して表示。 -->
 <!--   v0.1→v0.2：学校教材向けに配色・タイポ・余白を刷新。級/ジャンルごとのアクセント色、 -->
@@ -236,12 +237,13 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.5";
+  var APP_VER = "v0.6";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
     {id:"7",        name:"7級",      sub:"小学校中学年〜・アルファベットと身近な単語", isNew:true, c:"#e2735a", cbg:"#fdeee9"},
     {id:"6",        name:"6級",      sub:"小学校高学年〜・基本の文と日常表現",       isNew:true, c:"#d99a2b", cbg:"#fbf2df"},
+    {id:"prep",     name:"中学入学準備", sub:"6級と5級の間・使える英語学（勉強法/会話/作文）", c:"#3a8f9c", cbg:"#e6f3f5"},
     {id:"5",        name:"5級",      sub:"中学初級・be動詞と一般動詞",              c:"#2f9e6e", cbg:"#e7f6ef"},
     {id:"4",        name:"4級",      sub:"中学中級・過去形や比較",                 c:"#2f80c4", cbg:"#e6f1fb"},
     {id:"3",        name:"3級",      sub:"中学卒業・長文と英作文",                 c:"#5560c8", cbg:"#ecedfb"},
@@ -250,13 +252,18 @@
     {id:"2",        name:"2級",      sub:"高校卒業・社会的な話題",                 c:"#c05a86", cbg:"#faecf1"}
   ];
   var GENRES = [
-    {id:"vocab",     name:"単語",         icon:"📖", desc:"単語・熟語・コロケーション", c:"#2f80c4", cbg:"#e6f1fb"},
-    {id:"grammar",   name:"文法",         icon:"🧩", desc:"語順・時制・三単現",        c:"#7c5cd0", cbg:"#efeafb"},
-    {id:"technique", name:"大問テクニック", icon:"🎯", desc:"大問ごとの解き方のコツ",     c:"#d9803a", cbg:"#fbefe3"},
-    {id:"practice",  name:"本番練習",      icon:"📝", desc:"本番の形式で力だめし",       c:"#2f9e6e", cbg:"#e7f6ef"}
+    {id:"vocab",     name:"単語",       icon:"📖", desc:"単語・熟語・コロケーション",        c:"#2f80c4", cbg:"#e6f1fb"},
+    {id:"grammar",   name:"文法",       icon:"🧩", desc:"語順・時制・三単現",             c:"#7c5cd0", cbg:"#efeafb"},
+    {id:"technique", name:"4技能別問題", icon:"🎧", desc:"読む・聞く・書く・話すの実戦問題",   c:"#d9803a", cbg:"#fbefe3"},
+    {id:"practice",  name:"本番練習",    icon:"📝", desc:"本番の形式で力だめし",            c:"#2f9e6e", cbg:"#e7f6ef"},
+    {id:"meta",      name:"使える英語学", icon:"💡", desc:"勉強法・会話/作文のコツ",          c:"#2aa6a0", cbg:"#e3f5f3"}
   ];
   function gradeMeta(id){for(var i=0;i<GRADES.length;i++)if(GRADES[i].id===id)return GRADES[i];}
   function genreMeta(id){for(var i=0;i<GENRES.length;i++)if(GENRES[i].id===id)return GENRES[i];}
+  // その級で実際に問題があるジャンルだけを返す（級ごとに構成が違ってもOKに）
+  function availableGenres(grade){
+    return GENRES.filter(function(ge){var a=BANK[grade]&&BANK[grade][ge.id];return a&&a.length;});
+  }
 
   /* ============================ 問題バンク ============================
      q   : 日本語の指示文
@@ -284,8 +291,7 @@
       ],
       technique:[
         {t:"mc", q:"【7級リーディング】絵に合う英文をえらぼう。 🏃 走っている男の子", ch:["The boy is running.","The boy is sleeping.","The boy is eating.","The boy is swimming."], a:0, ex:"7級は『英文を読んで、絵に合う文をえらぶ』形式。動作のことばに注目！"},
-        {t:"mc", q:"【7級リスニング】質問『What is this?』、絵は 🐶。あう答えは？", ch:["It's a dog.","It's a cat.","It's a bird.","It's a fish."], a:0, ex:"7級リスニングは絵についての質問。英文は2回読まれるよ。"},
-        {t:"mc", q:"7級のリスニングで、英文は何回読まれる？", ch:["2回","1回","3回","読まれない"], chJp:true, a:0, ex:"7級は英文が2回読まれる。1回目で全体、2回目で答えを確認しよう。"}
+        {t:"mc", q:"【7級リスニング】質問『What is this?』、絵は 🐶。あう答えは？", ch:["It's a dog.","It's a cat.","It's a bird.","It's a fish."], a:0, ex:"7級リスニングは絵についての質問。英文は2回読まれるよ。"}
       ],
       practice:[
         {t:"mc", en:"(   ) is your name?", q:"(   ) に入る語は？", ch:["What","Who","Where","When"], a:0, ex:"名前をたずねるときは What is your name?。"},
@@ -307,8 +313,7 @@
       ],
       technique:[
         {t:"mc", q:"【6級リーディング】英文を読み、内容に合う絵をえらぼう。 “I have a cat. It is small and white.”", ch:["小さい白いねこ 🐱","大きい黒い犬","白い鳥","小さい茶色のねこ"], chJp:true, a:0, ex:"6級は『まとまった英文を読み、内容に合う絵をえらぶ』形式。色や大小を正確に。"},
-        {t:"mc", en:"A: How are you?", q:"【6級リスニング】自然なやりとりをえらぼう。", ch:["I'm fine, thank you.","It's a dog.","Yes, I do.","I'm twelve."], a:0, ex:"6級リスニングは会話のやりとり。あいさつの定型を覚えよう。"},
-        {t:"mc", q:"6級リスニングの形式は？", ch:["複数の会話で自然なやりとりをえらぶ","長文を書きとる","絵を描く","日本語に訳す"], chJp:true, a:0, ex:"6級は会話を聞いて、自然なやりとりをえらぶ。"}
+        {t:"mc", en:"A: How are you?", q:"【6級リスニング】自然なやりとりをえらぼう。", ch:["I'm fine, thank you.","It's a dog.","Yes, I do.","I'm twelve."], a:0, ex:"6級リスニングは会話のやりとり。あいさつの定型を覚えよう。"}
       ],
       practice:[
         {t:"mc", en:"A: (   ) is it? B: It's three o'clock.", q:"(   ) に入る語は？", ch:["What time","How many","What color","How old"], a:0, ex:"時刻をたずねる What time is it?。"},
@@ -349,8 +354,7 @@
         {t:"mc", en:"He was (   ) TV when I came home.", q:"(   ) に入る語は？", ch:["watching","watch","watches","watched"], a:0, ex:"was ＋〜ing → 過去進行形。"}
       ],
       technique:[
-        {t:"mc", en:"You must (   ) your homework before dinner.", q:"【4級・大問1】(   ) に合う語は？", ch:["finish","finishes","finishing","finished"], a:0, ex:"must のうしろは動詞の原形。"},
-        {t:"mc", q:"【4級長文】設問を解くコツは？", ch:["先に設問を読んでから本文を探す","本文を全部暗記する","選択肢だけ見る","最後だけ読む"], chJp:true, a:0, ex:"何を聞かれているか先に知ってから本文を読む。"}
+        {t:"mc", en:"You must (   ) your homework before dinner.", q:"【4級・大問1】(   ) に合う語は？", ch:["finish","finishes","finishing","finished"], a:0, ex:"must のうしろは動詞の原形。"}
       ],
       practice:[
         {t:"mc", en:"I have (   ) been to Australia.", q:"(   ) に入る語は？", ch:["never","ever","yet","still"], a:0, ex:"have never been＝一度も行ったことがない。"},
@@ -381,10 +385,7 @@
       ],
       technique:[
         {t:"mc", en:"A: It's a beautiful day. Why don't we go to the park? B: (   )", q:"【大問2】会話に合う応答は？", ch:["That sounds great.","You're welcome.","It was fun.","I'm full."], a:0, ex:"Why don't we ～?（〜しない？）は提案。賛成の That sounds great. が自然。"},
-        {t:"mc", en:"A: Excuse me. I'm looking for the station. B: (   ) Go straight and turn right.", q:"【大問2】会話に合う応答は？", ch:["Sure.","No, thank you.","Here you are.","That's too bad."], a:0, ex:"道案内が続く前のひとこと → Sure.。(   )のうしろの文もヒント。"},
-        {t:"mc", q:"【大問1】文中に every や always があったら、動詞の形は？", ch:["現在形（三単現に注意）","過去形","未来形","命令形"], chJp:true, a:0, ex:"時間ことばで時制を見ぬく。every/always → 現在形。"},
-        {t:"mc", q:"【大問3 長文】読むとき、まず最初にすると良いことは？", ch:["タイトルと設問を先に読む","本文を全部暗記する","最後の文から読む","選択肢だけ読む"], chJp:true, a:0, ex:"タイトル→設問→本文の順。何を聞かれるか頭に入れてから読む。"},
-        {t:"mc", q:"【大問5 英作文】意見英作文で点が高い書き方は？", ch:["I think ＋ 理由を2つ","理由なしで長く書く","日本語をまぜる","質問を書き写す"], chJp:true, a:0, ex:"I think＋理由2つで◎。テンプレを覚えると安定する。"}
+        {t:"mc", en:"A: Excuse me. I'm looking for the station. B: (   ) Go straight and turn right.", q:"【大問2】会話に合う応答は？", ch:["Sure.","No, thank you.","Here you are.","That's too bad."], a:0, ex:"道案内が続く前のひとこと → Sure.。(   )のうしろの文もヒント。"}
       ],
       practice:[
         {t:"mc", en:"A: Could you tell me the way to the station?", q:"応答として最も適切なものは？", ch:["Sure. Go straight and turn left.","Yes, I did.","No, thank you.","I'm fine."], a:0, ex:"道をたずねられたので、案内する Sure. ～ が正解。"},
@@ -409,8 +410,8 @@
         {t:"mc", en:"The movie was so boring that I (   ) asleep.", q:"(   ) に入る語は？", ch:["fell","felt","fall","feel"], a:0, ex:"fall asleep＝眠りに落ちる。過去形 fell。"}
       ],
       technique:[
-        {t:"mc", q:"【準2級・大問1】語彙が難化。効果的な対策は？", ch:["接頭辞・接尾辞から意味を推測する","全部丸暗記する","日本語訳に頼る","選択肢を見ない"], chJp:true, a:0, ex:"un-/re-/-tion など語の部品から意味を推測できる。"},
-        {t:"mc", q:"【準2級・Eメール】先に見るべきは？", ch:["件名と最初の段落で状況をつかむ","署名だけ","最終文だけ","選択肢だけ"], chJp:true, a:0, ex:"状況設定を最初につかむと設問が解きやすい。"}
+        {t:"mc", en:"A: Have you decided what to order? B: (   )", q:"【準2級・聞く/話す】自然な応答は？", ch:["Not yet. I'm still thinking.","Yes, I did it.","It's over there.","You're welcome."], a:0, ex:"Have you decided? に「まだ」と返す自然な流れ。"},
+        {t:"mc", en:"A: Why don't we study together this weekend? B: (   )", q:"【準2級・聞く/話す】提案への応答は？", ch:["Good idea. Let's meet at the library.","No, I didn't.","It's mine.","Thank you for coming."], a:0, ex:"提案 Why don't we ～? に賛成し具体案を返す。"}
       ],
       practice:[
         {t:"mc", en:"A: Would you mind (   ) the window? B: Not at all.", q:"(   ) に入る語は？", ch:["opening","to open","open","opened"], a:0, ex:"mind のあとは動名詞（〜ing）。"},
@@ -429,7 +430,7 @@
         {t:"mc", en:"(   ) harder, he would have passed the exam.", q:"(   ) に入る語は？", ch:["Had he studied","If he studies","He studied","Did he study"], a:0, ex:"仮定法過去完了の倒置：Had＋主語＋過去分詞。"}
       ],
       technique:[
-        {t:"mc", q:"【準2+ 長文】筆者の主張をつかむコツは？", ch:["逆接(however/but)の後に注目","固有名詞を数える","最初の単語だけ読む","結論を無視する"], chJp:true, a:0, ex:"逆接の後ろに筆者の言いたいことが来やすい。"}
+        {t:"mc", en:"A: I think we should reduce plastic use. B: (   )", q:"【準2+ 聞く/話す】意見への応答は？", ch:["I agree. It harms the ocean.","No, thank you.","It's over there.","Here you are."], a:0, ex:"意見に賛成し理由を添える自然な応答。"}
       ],
       practice:[
         {t:"mc", en:"Despite the rain, the event (   ) as planned.", q:"(   ) に入る語は？", ch:["took place","take place","taking place","taken place"], a:0, ex:"take place＝開催される。過去形 took place。"},
@@ -450,8 +451,8 @@
         {t:"mc", en:"The book (   ) by many students is famous.", q:"(   ) に入る語は？", ch:["read","reads","reading","to read"], a:0, ex:"名詞を後ろから説明する過去分詞。read（読まれる本）。"}
       ],
       technique:[
-        {t:"mc", q:"【2級・大問1】語彙問題で知らない単語が出たら？", ch:["前後の文脈から意味を推測する","あてずっぽうで①を選ぶ","とばして0点にする","日本語で書く"], chJp:true, a:0, ex:"2級は語彙が増える。文脈推測の力がカギ。"},
-        {t:"mc", q:"【2級長文】設問の順番と本文の順番の関係は？", ch:["だいたい本文の流れと同じ順で出る","完全にバラバラ","必ず逆順","関係ない"], chJp:true, a:0, ex:"設問は本文の流れに沿うことが多い。順に探す。"}
+        {t:"mc", en:"A: Could you give me some advice on studying abroad? B: (   )", q:"【2級・聞く/話す】助言を求められた応答は？", ch:["Sure. First, improve your daily conversation.","Yes, I did.","It's raining outside.","Goodbye for now."], a:0, ex:"助言を求められたら具体的なアドバイスで返す。"},
+        {t:"mc", en:"A: What do you think about online learning? B: (   )", q:"【2級・聞く/話す】意見を求められた応答は？", ch:["I think it's convenient, but it can be lonely.","Yes, I do it.","It's over there.","No problem, thanks."], a:0, ex:"意見を求められたら長所と短所を述べる。"}
       ],
       practice:[
         {t:"mc", en:"Many people believe that exercise (   ) good for health.", q:"(   ) に入る語は？", ch:["is","are","be","being"], a:0, ex:"主語 exercise（不可算・単数あつかい）→ is。"},
@@ -576,10 +577,7 @@
       ],
       technique:[
         {t:"mc", en:"A: Can I help you? B: (   )", q:"【大問2】店員への応答", ch:["Yes, I'm looking for a shirt.","You're welcome.","That's too bad.","I'm fine, thank you."], a:0, ex:"店での Can I help you? には用件で答える。"},
-        {t:"mc", en:"A: How long does it take? B: (   )", q:"【大問2】所要時間の問い", ch:["About twenty minutes.","Yes, I do.","It's mine.","At three."], a:0, ex:"How long（時間の長さ）には About ～ minutes。"},
-        {t:"mc", q:"【大問3A 掲示】先に確認すると効率的な情報は？", ch:["日時・場所・料金などの数字","本文の最後の段落","選択肢の順番","タイトルの色"], chJp:true, a:0, ex:"掲示は数字（時・場所・料金）に答えのカギ。"},
-        {t:"mc", q:"【大問4 Eメール】返信で必ずすることは？", ch:["相手の2つの質問に答える","天気の話をする","自己紹介を長く書く","日本語で書く"], chJp:true, a:0, ex:"2つの質問に答えるのが必須。"},
-        {t:"mc", q:"【リスニング第1部】最後の発言への応答を選ぶとき注目するのは？", ch:["最後の発言の意図（依頼・提案・お礼など）","最初の単語だけ","話す速さ","声の高さ"], chJp:true, a:0, ex:"機能（依頼/提案/お礼）をつかむと応答が選べる。"}
+        {t:"mc", en:"A: How long does it take? B: (   )", q:"【大問2】所要時間の問い", ch:["About twenty minutes.","Yes, I do.","It's mine.","At three."], a:0, ex:"How long（時間の長さ）には About ～ minutes。"}
       ],
       practice:[
         {t:"mc", q:"英文: The festival will be held on November 15. Each class will prepare a special event. 質問: When is the festival?", ch:["On November 15.","In summer.","Next year.","Every day."], a:0, ex:"on November 15 が日付。"},
@@ -601,7 +599,7 @@
         {t:"mc", en:"By the time we arrived, the train (   ) left.", q:"(   ) に入る語は？", ch:["had","has","have","was"], a:0, ex:"過去完了 had＋過去分詞。"}
       ],
       technique:[
-        {t:"mc", q:"【準2級・英作文】50語前後で点を取る構成は？", ch:["意見→理由2つ＋具体例","難語を並べる","結論を書かない","箇条書きにする"], chJp:true, a:0, ex:"意見＋理由＋具体例の型が安定。"}
+        {t:"mc", en:"A: How was your presentation? B: (   )", q:"【準2級・聞く/話す】感想を求められた応答は？", ch:["It went well, thanks for asking.","Yes, I do.","It's over there.","No, thank you."], a:0, ex:"How was ～? には感想で答える。"}
       ],
       practice:[
         {t:"mc", en:"It is important (   ) enough sleep.", q:"(   ) に入る語は？", ch:["to get","getting","get","got"], a:0, ex:"It is 形容詞 to＋原形。"},
@@ -618,7 +616,7 @@
         {t:"mc", en:"(   ) any help, please let me know.", q:"(   ) に入る語は？", ch:["Should you need","If you needs","Do you need","Need you"], a:0, ex:"仮定法の倒置 Should you need＝もし必要なら。"}
       ],
       technique:[
-        {t:"mc", q:"【準2+ 長文】段落ごとに何をメモすると良い？", ch:["各段落の主題（トピックセンテンス）","最後の単語","固有名詞の数","行数"], chJp:true, a:0, ex:"各段落の主題を押さえると全体像がつかめる。"}
+        {t:"mc", en:"A: Do you think students should have part-time jobs? B: (   )", q:"【準2+ 聞く/話す】意見を求められた応答は？", ch:["Yes, because they can learn responsibility.","No, I didn't.","It's mine.","You're welcome."], a:0, ex:"Do you think ～? には Yes/No＋理由で答える。"}
       ],
       practice:[
         {t:"mc", en:"The proposal was rejected (   ) its high cost.", q:"(   ) に入る語は？", ch:["because of","because","although","despite"], a:0, ex:"あとが名詞句 → because of。"},
@@ -637,7 +635,7 @@
         {t:"mc", en:"I had my bike (   ) yesterday.", q:"(   ) に入る語は？", ch:["repaired","repair","repairing","to repair"], a:0, ex:"have＋物＋過去分詞＝〜してもらう。"}
       ],
       technique:[
-        {t:"mc", q:"【2級・英作文】説得力を上げる型は？", ch:["主張→理由→具体例→再主張","感情だけで書く","複数の話題を混ぜる","結論を省く"], chJp:true, a:0, ex:"主張を具体例で支え、最後に再主張。"}
+        {t:"mc", en:"A: Some people work from home now. What do you think? B: (   )", q:"【2級・聞く/話す】意見を述べる応答は？", ch:["I think it saves time, though teamwork can suffer.","Yes, I work.","It's over there.","Thank you very much."], a:0, ex:"意見を求められたら理由・対比を入れて述べる。"}
       ],
       practice:[
         {t:"mc", en:"(   ) the difficulty, they completed the project.", q:"(   ) に入る語は？", ch:["Despite","Because","So","Although"], a:0, ex:"Despite＋名詞＝〜にもかかわらず。"},
@@ -645,12 +643,26 @@
       ]
     }
   };
-  // MORE を BANK に連結
+  // MORE を BANK に連結（新しい級も作成する）
   (function(){
-    for(var g in MORE){ if(!BANK[g])continue;
+    for(var g in MORE){ if(!BANK[g])BANK[g]={};
       for(var ge in MORE[g]){ if(!BANK[g][ge])BANK[g][ge]=[];
         BANK[g][ge]=BANK[g][ge].concat(MORE[g][ge]); } }
   })();
+
+  // 中学入学準備（メタ学力／使える英語学）— 級レベル判定には使わない学習モジュール
+  BANK.prep = { meta:[
+    {t:"mc", q:"会話で最も大切なのは？", ch:["完璧な文法より、止まらずに伝え続けること","発音を完璧にすること","難しい単語を使うこと","だまって考えこむこと"], chJp:true, a:0, ex:"会話は流れ。多少まちがえても、止まらず伝え続けるほうが通じる。"},
+    {t:"mc", q:"知らない単語を英語で伝えたいとき有効なのは？", ch:["別の簡単な言葉で言いかえる（パラフレーズ）","あきらめて黙る","日本語で言う","辞書を最後まで待つ"], chJp:true, a:0, ex:"言いかえる力＝発信力。a round thing のように説明できる。"},
+    {t:"mc", q:"リスニングが苦手なときの練習法は？", ch:["毎日少しずつ、同じ音声をくり返し聞く","一度だけ長時間聞く","字幕だけを読む","音楽だけを流す"], chJp:true, a:0, ex:"同じ素材のくり返しで、音と意味が結びつく。"},
+    {t:"mc", q:"英単語を覚えるコツは？", ch:["例文・場面ごと覚える","つづりだけ100回書く","意味だけ眺める","一夜づけで全部"], chJp:true, a:0, ex:"単語は使う場面とセットだと記憶に残る。"},
+    {t:"mc", q:"英作文で最初にすべきことは？", ch:["結論（自分の意見）を先に決める","かっこいい単語を探す","とにかく長く書く","日本語で全部書く"], chJp:true, a:0, ex:"意見→理由→具体例。最初に立場を決めると書きやすい。"},
+    {t:"mc", en:"A: ...（聞き取れなかった）", q:"相手の話が聞き取れなかったときの一言は？", ch:["Pardon? / Could you say that again?","Goodbye.","No.","Thank you."], a:0, ex:"聞き返しは会話の基本。遠慮なく Pardon? と言ってよい。"},
+    {t:"mc", q:"英語を伸ばす毎日の習慣として良いのは？", ch:["短時間でも毎日英語にふれる","週に1回だけ長時間やる","テスト前だけやる","ただ聞き流すだけ"], chJp:true, a:0, ex:"毎日少しの積み重ねが、いちばん力になる。"},
+    {t:"mc", q:"スピーチや面接で印象が良いのは？", ch:["相手の目を見て、はっきり話す","下を向いて小声で話す","早口で一気に言う","暗記を棒読みする"], chJp:true, a:0, ex:"内容だけでなく、伝え方（声・視線）も評価される。"},
+    {t:"mc", q:"会話中に文法をまちがえたと気づいたら？", ch:["気にしすぎず、言いたいことを続ける","会話をやめる","全部言い直して止まる","あやまり続ける"], chJp:true, a:0, ex:"会話は完璧さより継続。通じればOK、と考えよう。"},
+    {t:"mc", q:"長文を速く読むコツは？", ch:["タイトルと最初の文で話題をつかむ","全単語を辞書で引く","最後の段落から読む","声に出して一字ずつ"], chJp:true, a:0, ex:"先に話題をつかむと、細部の意味も推測しやすい。"}
+  ] };
 
   /* ============================ 採点ユーティリティ ============================ */
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -761,7 +773,7 @@
     '</div>'+
     '<div class="card">'+
       '<div class="sectlabel"><span class="dot"></span>'+esc(gm.name)+' のジャンル別 正答率</div>'+
-      '<div class="genres">'+GENRES.map(function(ge){
+      '<div class="genres">'+availableGenres(S.grade).map(function(ge){
           var a=acc(S.grade,ge.id);
           var pct=a?a.pct:0;
           return '<div class="gtile" data-train="'+ge.id+'" style="--tc:'+ge.c+';--tcb:'+ge.cbg+'">'+
@@ -802,9 +814,12 @@
   function renderTrain(){
     setLoop("train");
     var gm=gradeMeta(S.grade);
+    // この級にS.genreが無ければ、利用できる先頭ジャンルに切り替え
+    var avail=availableGenres(S.grade);
+    if(avail.length && !avail.some(function(g){return g.id===S.genre;})){S.genre=avail[0].id;S.q=null;}
     if(!S.q)pickQuestion();
 
-    var tabs=GENRES.map(function(ge){
+    var tabs=avail.map(function(ge){
       return '<button class="pill'+(ge.id===S.genre?' on':'')+'" data-genre="'+ge.id+'" style="--pc:'+ge.c+'">'+ge.icon+' '+ge.name+'</button>';
     }).join("");
     var a=acc(S.grade,S.genre);
@@ -1012,7 +1027,7 @@
     var t=S.test, gm=gradeMeta(S.grade);
     var total=t.queue.length, pct=total?Math.round(t.ok/total*100):0;
     var pass=(t.ok/total)>=PASS;
-    saveLastTest({grade:S.grade, pct:pct, pass:pass, ts:Date.now()});
+    if(LEVEL_ORDER.indexOf(S.grade)>=0) saveLastTest({grade:S.grade, pct:pct, pass:pass, ts:Date.now()});
     app.innerHTML=''+
     '<div class="card center">'+
       '<div class="sectlabel" style="justify-content:center;color:var(--brand-ink)">'+esc(gm.name)+' 判定テスト 結果</div>'+
