@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.11 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.12 | 2026-06-18 JST -->
+<!--   v0.11→v0.12：苦手ジャンルの自動おすすめを追加。正答率データから「今日のおすすめ」カード＋苦手タイルに「苦手」バッジ。 -->
 <!--   v0.10→v0.11：使える英語学（中学入学準備）を+10で計20問。4技能別問題を全級拡充。総計413問。 -->
 <!--   v0.9→v0.10：レベルバーを全幅に拡張＋目盛り線追加。級間を4分割（3中間点）した連続位置でポインタ表示。 -->
 <!--   数値は出さず「3級ギリ合格／3級＋α／4と3のあいだ／3級の手前」等の語で“あくまで目安”を視覚化（CSE換算は非公開のため不使用）。 -->
@@ -126,6 +127,17 @@
   .acclab{font-size:12px;font-weight:800;color:var(--ink);min-width:34px;text-align:right;}
   .acclab.none{color:var(--hint);font-weight:600;}
   .accsub{font-size:11px;color:var(--hint);margin-top:4px;}
+  .gtile .weakbadge{position:absolute;top:10px;right:10px;font-size:9px;font-weight:800;color:#fff;
+    background:#d65454;padding:2px 8px;border-radius:999px;letter-spacing:.04em;}
+
+  /* 苦手ジャンルのおすすめ */
+  .rec{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-left:5px solid var(--rc,#d9803a);}
+  .rec .rec-ico{font-size:26px;flex:0 0 auto;}
+  .rec .rec-txt{flex:1 1 180px;min-width:0;}
+  .rec .rec-h{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:3px;}
+  .rec .rec-main{font-size:16px;font-weight:700;line-height:1.45;}
+  .rec .rec-sub{font-size:13px;color:var(--muted);margin-top:3px;}
+  .rec .act{white-space:nowrap;}
 
   /* 共通ボタン */
   .actions{margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;}
@@ -256,7 +268,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.11";
+  var APP_VER = "v0.12";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1079,6 +1091,40 @@
     if(!g||!g.n)return null;
     return {pct:Math.round(g.ok/g.n*100), n:g.n, ok:g.ok};
   }
+  // 苦手ジャンルの自動おすすめ：正答率データから次にやるべきジャンルを判定
+  function recommendGenre(grade){
+    var list=availableGenres(grade).map(function(ge){var a=acc(grade,ge.id);
+      return {ge:ge, n:a?a.n:0, pct:a?a.pct:null};});
+    if(!list.length) return {type:"none"};
+    var untried=list.filter(function(x){return x.n===0;});
+    var enough =list.filter(function(x){return x.n>=3;}).sort(function(a,b){return a.pct-b.pct;});
+    if(enough.length && enough[0].pct<80) return {type:"weak", ge:enough[0].ge, pct:enough[0].pct};
+    if(untried.length) return {type:"untried", ge:untried[0].ge};
+    var few=list.filter(function(x){return x.n>0 && x.n<3;}).sort(function(a,b){return a.n-b.n;});
+    if(few.length) return {type:"more", ge:few[0].ge};
+    return {type:"good"};
+  }
+  function recCard(rec){
+    if(!rec||rec.type==="none") return "";
+    var ico,main,sub,btn,rc,act;
+    if(rec.type==="weak"){ rc=rec.ge.c; ico="🎯";
+      main='いまの苦手は <b style="color:'+rec.ge.c+'">'+esc(rec.ge.name)+'</b>（正答率 '+rec.pct+'%）';
+      sub='まずはここを集中トレーニング！'; btn=rec.ge.icon+' '+rec.ge.name+'を訓練する →'; act='train:'+rec.ge.id;
+    } else if(rec.type==="untried"){ rc=rec.ge.c; ico="✨";
+      main='まだ未挑戦の <b style="color:'+rec.ge.c+'">'+esc(rec.ge.name)+'</b> があるよ';
+      sub='まずは一度ためしてみよう。'; btn=rec.ge.icon+' '+rec.ge.name+'を試す →'; act='train:'+rec.ge.id;
+    } else if(rec.type==="more"){ rc=rec.ge.c; ico="📊";
+      main='<b style="color:'+rec.ge.c+'">'+esc(rec.ge.name)+'</b> をもう少し解いてみよう';
+      sub='何問か解くと、苦手ジャンルが見えてくるよ。'; btn=rec.ge.icon+' '+rec.ge.name+'を練習する →'; act='train:'+rec.ge.id;
+    } else { rc='var(--ok)'; ico="🎉";
+      main='どのジャンルも好調！'; sub='判定テストで実力をためそう。'; btn='📋 判定テストへ →'; act='test';
+    }
+    return '<div class="card rec" style="--rc:'+rc+'">'+
+      '<div class="rec-ico">'+ico+'</div>'+
+      '<div class="rec-txt"><div class="rec-h">今日のおすすめ</div>'+
+        '<div class="rec-main">'+main+'</div><div class="rec-sub">'+sub+'</div></div>'+
+      '<button class="act" id="recGo" data-act="'+act+'">'+btn+'</button></div>';
+  }
   function loadGrade(){try{return localStorage.getItem(GRADE_KEY)||"3";}catch(e){return "3";}}
   function saveGrade(g){try{localStorage.setItem(GRADE_KEY,g);}catch(e){}}
 
@@ -1149,6 +1195,8 @@
   function renderHome(){
     setLoop("home");
     var gm=gradeMeta(S.grade);
+    var rec=recommendGenre(S.grade);
+    var weakId=(rec.type==="weak")?rec.ge.id:null;
     var gradeChips=GRADES.map(function(g){
       return '<button class="gchip'+(g.id===S.grade?' on':'')+'" data-g="'+g.id+'" '+
              'style="--gc:'+g.c+';--gcb:'+g.cbg+'">'+
@@ -1162,6 +1210,7 @@
       '<div class="sectlabel"><span class="dot"></span>① 級をえらぶ</div>'+
       '<div class="grades">'+gradeChips+'</div>'+
     '</div>'+
+    recCard(rec)+
     '<div class="card">'+
       '<div class="nowgrade">いまの級：<b>'+esc(gm.name)+'</b></div>'+
       '<div class="hint" style="margin-bottom:14px;">ジャンルごとに訓練 → 判定テスト、をくり返して合格をめざそう。</div>'+
@@ -1175,6 +1224,7 @@
           var a=acc(S.grade,ge.id);
           var pct=a?a.pct:0;
           return '<div class="gtile" data-train="'+ge.id+'" style="--tc:'+ge.c+';--tcb:'+ge.cbg+'">'+
+                 (ge.id===weakId?'<span class="weakbadge">苦手</span>':'')+
                  '<div class="gi">'+ge.icon+'</div>'+
                  '<div class="gl">'+esc(ge.name)+'</div>'+
                  '<div class="gd">'+esc(ge.desc)+'</div>'+
@@ -1195,6 +1245,12 @@
     var tiles=document.querySelectorAll(".gtile");
     for(var k=0;k<tiles.length;k++)tiles[k].addEventListener("click",function(){
       S.genre=this.getAttribute("data-train"); go("train");
+    });
+    var rg=$("recGo");
+    if(rg)rg.addEventListener("click",function(){
+      var a=this.getAttribute("data-act");
+      if(a==="test"){go("testsetup");}
+      else{S.genre=a.split(":")[1];go("train");}
     });
   }
 
