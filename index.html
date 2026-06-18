@@ -1,4 +1,6 @@
-<!-- mado_loop.html | v0.3 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.4 | 2026-06-18 JST -->
+<!--   v0.3→v0.4：ヘッダのレベル目安を9メモリの横バー化（7未満▶7▶…▶2級／青→黄→赤グラデーション）。 -->
+<!--   直近の判定テスト結果に応じて現在位置にポインタを表示。 -->
 <!--   v0.2→v0.3：準2級・準2級プラスを追加（全8級）。選択肢の表示順をランダム化（正答が①固定の罠を解消）。 -->
 <!--   ヘッダに「いまの目安：英検◯級レベル」を直近の判定テスト結果から算出して表示。 -->
 <!--   v0.1→v0.2：学校教材向けに配色・タイポ・余白を刷新。級/ジャンルごとのアクセント色、 -->
@@ -48,14 +50,21 @@
   .tagline{font-size:12px;color:var(--muted);margin-top:1px;}
   .ver{font-size:11px;color:var(--hint);background:#fff;border:1px solid var(--line);
     padding:3px 9px;border-radius:999px;white-space:nowrap;align-self:flex-start;}
-  .levelchip{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;
-    color:var(--brand-ink);background:var(--brand-bg);border:1px solid #d7e2f5;border-radius:999px;
-    padding:7px 13px;line-height:1.3;max-width:48%;text-align:right;}
-  .levelchip .lc-ic{font-size:14px;flex:0 0 auto;}
-  .levelchip b{color:var(--brand);}
-  .levelchip.none{color:var(--muted);background:#fff;border-color:var(--line);font-weight:600;}
-  @media(max-width:560px){.levelchip{max-width:100%;order:3;margin:8px 0 0;width:100%;justify-content:center;text-align:center;}
-    header{flex-wrap:wrap;}.ver{margin-left:auto;}}
+  /* 級レベルバー（7未満▶7▶…▶2級／青→黄→赤） */
+  .levelbar{margin-left:auto;width:340px;max-width:50%;}
+  .levelbar .lb-cap{font-size:12px;font-weight:700;color:var(--brand-ink);text-align:right;margin-bottom:5px;}
+  .levelbar.none .lb-cap{color:var(--muted);font-weight:600;}
+  .lb-track{position:relative;height:9px;border-radius:999px;
+    background:linear-gradient(90deg,#2b59c3 0%,#e9b21e 50%,#d6453f 100%);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);}
+  .lb-pointer{position:absolute;top:50%;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;
+    background:#fff;border:2px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.32);transition:left .4s ease;}
+  .lb-scale{display:grid;grid-template-columns:repeat(9,1fr);margin-top:4px;}
+  .lb-cell{font-size:9px;color:var(--hint);text-align:center;line-height:1.15;}
+  .lb-cell.on{color:var(--ink);font-weight:800;}
+  .levelbar.none .lb-track{filter:grayscale(.55) opacity(.6);}
+  @media(max-width:560px){.levelbar{max-width:100%;width:100%;order:3;margin:10px 0 0;}
+    .levelbar .lb-cap{text-align:center;}header{flex-wrap:wrap;}.ver{margin-left:auto;}}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
     padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow);}
@@ -209,7 +218,7 @@
         <div class="tagline">ジャンル訓練 → 判定テストで、合格へ。</div>
       </div>
     </div>
-    <div class="levelchip none" id="levelchip"></div>
+    <div class="levelbar none" id="levelbar"></div>
     <span class="ver" id="ver">v0.2</span>
   </header>
 
@@ -227,7 +236,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.3";
+  var APP_VER = "v0.4";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -498,19 +507,23 @@
     if(i<=0)    return {state:"below"};                 // 最易級で不合格
     return {state:"level", id:LEVEL_ORDER[i-1]};        // 不合格 → 一段やさしい級
   }
+  var LEVEL_BAR_LABELS=["7未満","7級","6級","5級","4級","3級","準2級","準2+","2級"]; // 9メモリ
   function updateLevelChip(){
-    var el=document.getElementById("levelchip"); if(!el) return;
+    var el=document.getElementById("levelbar"); if(!el) return;
     var lv=estimateLevel();
-    if(lv.state==="none"){
-      el.className="levelchip none";
-      el.innerHTML='<span class="lc-ic">📊</span>まだ判定なし — 判定テストで力をはかろう';
-    }else if(lv.state==="below"){
-      el.className="levelchip";
-      el.innerHTML='<span class="lc-ic">📊</span>いまの目安：<b>英検7級</b>にチャレンジ中';
-    }else{
-      el.className="levelchip";
-      el.innerHTML='<span class="lc-ic">📊</span>いまの目安：<b>英検'+esc(gradeMeta(lv.id).name)+'</b>レベル';
-    }
+    var barIdx=-1, caption;
+    if(lv.state==="none"){ caption="まだ判定なし — 判定テストで力をはかろう"; }
+    else if(lv.state==="below"){ barIdx=0; caption="いまの目安：英検7級にチャレンジ中"; }
+    else { barIdx=LEVEL_ORDER.indexOf(lv.id)+1; caption="いまの目安：英検"+gradeMeta(lv.id).name+"レベル"; }
+    var scale=LEVEL_BAR_LABELS.map(function(t,i){
+      return '<span class="lb-cell'+(i===barIdx?' on':'')+'">'+esc(t)+'</span>';
+    }).join("");
+    var pointer = barIdx>=0
+      ? '<span class="lb-pointer" style="left:'+(((barIdx+0.5)/9*100).toFixed(2))+'%"></span>' : '';
+    el.className="levelbar"+(lv.state==="none"?" none":"");
+    el.innerHTML='<div class="lb-cap">'+esc(caption)+'</div>'+
+                 '<div class="lb-track">'+pointer+'</div>'+
+                 '<div class="lb-scale">'+scale+'</div>';
   }
 
   function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
