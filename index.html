@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.6 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.7 | 2026-06-18 JST -->
+<!--   v0.6→v0.7：3級・4級を中心に問題増量（MORE2）。3級70問・4級49問・全体250問。4技能別問題も拡充。 -->
 <!--   v0.5→v0.6：「大問テクニック」を「4技能別問題」に改名し、メタ（解き方のコツ）を採点ジャンルから除去→実戦問題に。 -->
 <!--   メタ学力は新モジュール「中学入学準備（使える英語学）」を6級と5級の間に新設し10問収録（級レベル判定には不使用）。 -->
 <!--   級ごとに構成が異なってもOKなようavailableGenresで存在するジャンルのみ表示。 -->
@@ -237,7 +238,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.6";
+  var APP_VER = "v0.7";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -648,6 +649,89 @@
     for(var g in MORE){ if(!BANK[g])BANK[g]={};
       for(var ge in MORE[g]){ if(!BANK[g][ge])BANK[g][ge]=[];
         BANK[g][ge]=BANK[g][ge].concat(MORE[g][ge]); } }
+  })();
+
+  // 追加問題（フェーズ③拡充：3級・4級中心）
+  var MORE2 = {
+    "4":{
+      vocab:[
+        {t:"mc", q:"「〜を借りる」は？", ch:["borrow","lend","buy","sell"], a:0, ex:"borrow＝（無料で）借りる。lend＝貸す。"},
+        {t:"mc", q:"「めずらしい・まれな」は？", ch:["rare","busy","cheap","heavy"], a:0, ex:"rare＝まれな。"},
+        {t:"mc", q:"「〜を決める」は？", ch:["decide","arrive","invite","collect"], a:0, ex:"decide＝決める。decide to＋原形。"},
+        {t:"mc", q:"「ふつう・たいてい」は？", ch:["usually","suddenly","quickly","hardly"], a:0, ex:"usually＝たいてい（頻度）。"},
+        {t:"fill", q:"「病院」を英語で（h で始まる）。", a:"hospital", ex:"hospital＝病院。"},
+        {t:"fill", q:"「海外へ・外国へ」を英語で（a で始まる）。", a:"abroad", ex:"go abroad＝海外へ行く。"},
+        {t:"mc", q:"「正しい」は？", ch:["correct","careful","famous","useful"], a:0, ex:"correct＝正しい。"},
+        {t:"fill", q:"「（時間が）早く」を英語で（e で始まる）。", a:"early", ex:"early＝（時間が）早く。"}
+      ],
+      grammar:[
+        {t:"mc", en:"I was (   ) when you called.", q:"(   ) に入る語は？", ch:["sleeping","slept","sleep","sleeps"], a:0, ex:"過去進行形 was＋〜ing。"},
+        {t:"mc", en:"She is the (   ) student in the class.", q:"(   ) に入る語は？", ch:["tallest","taller","tall","more tall"], a:0, ex:"the＋最上級 -est。"},
+        {t:"mc", en:"This question is (   ) than that one.", q:"(   ) に入る語は？", ch:["easier","easy","easiest","more easy"], a:0, ex:"短い語の比較級は -er。easier。"},
+        {t:"mc", en:"I have already (   ) lunch.", q:"(   ) に入る語は？", ch:["eaten","eat","ate","eating"], a:0, ex:"現在完了 have＋過去分詞 eaten。"},
+        {t:"mc", en:"He went to bed early (   ) he was tired.", q:"(   ) に入る語は？", ch:["because","so","but","or"], a:0, ex:"理由をつなぐ because。"},
+        {t:"mc", en:"Would you like (   ) tea?", q:"(   ) に入る語は？", ch:["some","any","a","an"], a:0, ex:"すすめる文では some を使う。"},
+        {t:"mc", en:"My mother told me (   ) the dishes.", q:"(   ) に入る語は？", ch:["to wash","wash","washing","washed"], a:0, ex:"tell 人 to＋原形。"},
+        {t:"mc", en:"If you are tired, you (   ) take a rest.", q:"(   ) に入る語は？", ch:["should","are","do","have"], a:0, ex:"should＝〜すべき・したほうがよい。"},
+        {t:"mc", en:"It was (   ) cold that we stayed home.", q:"(   ) に入る語は？", ch:["so","such","very","too"], a:0, ex:"so＋形容詞＋that＝とても〜なので…。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: How was your weekend? B: (   )", q:"【4級・聞く/話す】自然な応答は？", ch:["It was fun. I went hiking.","Yes, I do.","Here you are.","At seven."], a:0, ex:"How was ～? には感想で答える。"},
+        {t:"mc", en:"A: What are you going to do this summer? B: (   )", q:"【4級・聞く/話す】予定をたずねる応答は？", ch:["I'm going to visit my aunt.","It was great.","You're welcome.","Yes, please."], a:0, ex:"未来の予定 be going to で答える。"},
+        {t:"mc", en:"A: I won first prize! B: (   )", q:"【4級・聞く/話す】自然な応答は？", ch:["Congratulations!","That's too bad.","I'm sorry.","Pardon?"], a:0, ex:"よい知らせには Congratulations!。"},
+        {t:"mc", q:"【4級・読む】掲示: SWIMMING LESSON / Date: July 10 / Time: 10:00-11:30 / Bring your own towel. 質問: What should you bring?", ch:["A towel.","A book.","A ticket.","Lunch."], a:0, ex:"Bring your own towel から towel。"},
+        {t:"mc", q:"【4級・読む】Eメール: Hi! I'm going to have a birthday party on Saturday. Can you come? 質問: When is the party?", ch:["On Saturday.","On Sunday.","Next month.","Today."], a:0, ex:"on Saturday が日付。"},
+        {t:"mc", en:"A: Can you help me with my bag? B: (   )", q:"【4級・聞く/話す】依頼への応答は？", ch:["Sure, no problem.","It's mine.","That's too bad.","Goodbye."], a:0, ex:"依頼には Sure / No problem。"}
+      ],
+      practice:[
+        {t:"mc", en:"I'm interested (   ) science.", q:"(   ) に入る語は？", ch:["in","on","at","to"], a:0, ex:"be interested in。"},
+        {t:"mc", en:"He is afraid (   ) dogs.", q:"(   ) に入る語は？", ch:["of","in","on","to"], a:0, ex:"be afraid of＝〜をこわがる。"},
+        {t:"mc", en:"We arrived (   ) the station at noon.", q:"(   ) に入る語は？", ch:["at","to","in","on"], a:0, ex:"arrive at＋場所。"},
+        {t:"mc", en:"She has lived in Japan (   ) 2015.", q:"(   ) に入る語は？", ch:["since","for","from","at"], a:0, ex:"現在完了＋since＝〜以来。"},
+        {t:"mc", q:"英文: Yuki practices the piano every day because she wants to be a pianist. 質問: Why does Yuki practice the piano?", ch:["To be a pianist.","To meet friends.","To win money.","To watch TV."], a:0, ex:"because のあとが理由。"},
+        {t:"mc", en:"A: Which season do you like the best? B: (   )", q:"応答として自然なのは？", ch:["I like spring the best.","Yes, I do.","It's mine.","At three."], a:0, ex:"like ～ the best で答える。"}
+      ]
+    },
+    "3":{
+      vocab:[
+        {t:"fill", en:"I'm looking (   ) to seeing you.", q:"(   ) に入る1語。", a:"forward", ex:"look forward to ～ing＝〜を楽しみに待つ。"},
+        {t:"mc", en:"My grandfather is very (   ). He is 90 but walks every day.", q:"場面に合う語は？", ch:["healthy","hungry","angry","boring"], a:0, ex:"毎日歩ける → healthy（健康な）。"},
+        {t:"mc", en:"Could you (   ) me how to get to the station?", q:"(   ) に入る語は？", ch:["tell","talk","say","speak"], a:0, ex:"tell 人 ＝（人）に教える/言う。"},
+        {t:"mc", en:"She (   ) her homework before dinner.", q:"(   ) に入る語は？", ch:["finished","arrived","invited","collected"], a:0, ex:"finish ＝終える。"},
+        {t:"fill", q:"「便利な」を英語で（c で始まる）。", a:"convenient", ex:"convenient＝便利な。"},
+        {t:"fill", q:"「〜を覚えている」を英語で（r で始まる）。", a:"remember", ex:"remember＝覚えている・思い出す。"}
+      ],
+      grammar:[
+        {t:"mc", en:"Do you know (   ) he lives?", q:"(   ) に入る語は？", ch:["where","what","which","whose"], a:0, ex:"間接疑問。know のあとは where he lives（平叙の語順）。"},
+        {t:"mc", en:"The cake (   ) by my mother was delicious.", q:"(   ) に入る語は？", ch:["made","make","making","makes"], a:0, ex:"名詞を後ろから説明する過去分詞 made。"},
+        {t:"mc", en:"I have a friend (   ) lives in Canada.", q:"(   ) に入る語は？", ch:["who","which","what","whose"], a:0, ex:"人を説明する関係代名詞 who。"},
+        {t:"mc", en:"It is important (   ) breakfast every day.", q:"(   ) に入る語は？", ch:["to eat","eating","eat","ate"], a:0, ex:"It is 形容詞 to＋原形。"},
+        {t:"mc", en:"He is not as tall (   ) his brother.", q:"(   ) に入る語は？", ch:["as","than","more","so"], a:0, ex:"not as ～ as …＝…ほど〜でない。"},
+        {t:"mc", en:"I don't know what (   ).", q:"(   ) に入る語は？", ch:["to say","saying","said","says"], a:0, ex:"what to say＝何を言うべきか。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: Do you have any plans for the weekend? B: (   )", q:"【3級・聞く/話す】自然な応答は？", ch:["I'm going to visit my grandparents.","Yes, I did.","You're welcome.","It's mine."], a:0, ex:"予定をたずねられたら be going to で答える。"},
+        {t:"mc", en:"A: Shall I carry your bag? B: (   )", q:"【3級・聞く/話す】申し出への応答は？", ch:["Thank you. That's very kind.","No, I didn't.","It's over there.","At seven."], a:0, ex:"Shall I ～? の申し出にはお礼で受ける。"},
+        {t:"mc", en:"A: I'm sorry I'm late. B: (   )", q:"【3級・聞く/話す】自然な応答は？", ch:["That's OK. Don't worry.","Congratulations!","Here you are.","Yes, please."], a:0, ex:"おわびには That's OK. と返す。"},
+        {t:"mc", en:"A: How often do you play tennis? B: (   )", q:"【3級・聞く/話す】頻度をたずねる応答は？", ch:["About twice a week.","Yes, I do.","It's mine.","Last year."], a:0, ex:"How often には頻度（twice a week など）で答える。"},
+        {t:"mc", q:"【3級・読む】掲示: SUMMER CONCERT / Place: City Hall / Tickets: 500 yen (free for children under 6). 質問: How much is a ticket for a 4-year-old child?", ch:["Free.","500 yen.","250 yen.","1000 yen."], a:0, ex:"under 6 は無料 → 4歳は free。"},
+        {t:"mc", q:"【3級・読む】掲示: The library will be closed on Mondays in August. 質問: When is the library closed?", ch:["On Mondays in August.","Every day.","On Sundays.","In July."], a:0, ex:"closed on Mondays in August。"},
+        {t:"mc", q:"【3級・読む】Eメール: I bought a new bike. Why don't we ride together this Sunday? 質問: What does the writer want to do on Sunday?", ch:["Ride bikes together.","Buy a bike.","Go shopping.","Study."], a:0, ex:"Why don't we ride together から。"},
+        {t:"mc", q:"【3級・聞く】A: Did you finish your science report? B: Not yet. I'll do it tonight. 質問: What will B do tonight?", ch:["Finish the science report.","Watch a movie.","Play soccer.","Go shopping."], a:0, ex:"I'll do it tonight の it＝science report。"}
+      ],
+      practice:[
+        {t:"mc", en:"A: Have you ever been to Kyoto? B: (   )", q:"応答として自然なのは？", ch:["Yes, twice.","Yes, I am.","It's mine.","At seven."], a:0, ex:"Have you ever ～? には回数などで答える。"},
+        {t:"mc", en:"A: You look pale. Are you OK? B: (   )", q:"応答として自然なのは？", ch:["I have a headache.","Congratulations!","Here you are.","You're welcome."], a:0, ex:"具合をたずねられて症状を答える。"},
+        {t:"mc", q:"英文: The new restaurant near the station is popular because the food is cheap and delicious. 質問: Why is the restaurant popular?", ch:["Because the food is cheap and delicious.","Because it is far away.","Because it is expensive.","Because it is small."], a:0, ex:"because のあとが理由。"},
+        {t:"mc", en:"A: Could you turn down the music? B: (   )", q:"応答として自然なのは？", ch:["Sure, sorry about that.","Yes, I did.","It's over there.","Congratulations!"], a:0, ex:"依頼に応じる Sure＋ひとこと。"},
+        {t:"mc", q:"英文: Mike studied hard for the test, so he got a good score. 質問: Why did Mike get a good score?", ch:["Because he studied hard.","Because he is lucky.","Because the test was easy.","Because he slept well."], a:0, ex:"so の前が理由（studied hard）。"}
+      ]
+    }
+  };
+  (function(){
+    for(var g in MORE2){ if(!BANK[g])BANK[g]={};
+      for(var ge in MORE2[g]){ if(!BANK[g][ge])BANK[g][ge]=[];
+        BANK[g][ge]=BANK[g][ge].concat(MORE2[g][ge]); } }
   })();
 
   // 中学入学準備（メタ学力／使える英語学）— 級レベル判定には使わない学習モジュール
