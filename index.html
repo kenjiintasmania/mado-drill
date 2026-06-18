@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.13 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.14 | 2026-06-18 JST -->
+<!--   v0.13→v0.14：長文パッセージを追加（計6本）。3級に内容一致型の作文・Eメール読解、4級・準2級にも長文読解を新設。総計430問。 -->
 <!--   v0.12→v0.13：判定テスト結果に「苦手を鍛える」導線を追加。成績の先生へ送信（GAS連携）を統合。 -->
 <!--   送信先=旧mado_drillと同じGAS_URL。?cls=3A&num=5&name=… と端末記憶で自動入力。 -->
 <!--   v0.11→v0.12：苦手ジャンルの自動おすすめを追加。正答率データから「今日のおすすめ」カード＋苦手タイルに「苦手」バッジ。 -->
@@ -278,7 +279,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.13";
+  var APP_VER = "v0.14";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -990,6 +991,26 @@
       "That night, my grandfather saw the picture. He said, \"This is beautiful, but you look so sad. Why?\" I told him about the contest. He said, \"How did you feel when you saw the mountain in the morning?\" I said, \"The sky slowly changed its color, and the mountain looked really beautiful.\" I told him about my other feelings on that morning, too. He said, \"How about expressing them? Your picture is already good. And don't worry, Daiki. You should keep taking pictures if you really like taking pictures. If you keep taking pictures, your pictures will be better.\" I said, \"That may be right. I'll try again.\"",
       "The next weekend, I went to the mountain again before breakfast. I thought about the colors of the sky and my town. I expressed my feelings in the picture. One month later, I showed the new picture to our club teacher. She said, \"This picture is really [ う ].\" I joined another contest with the picture. Finally, I got a prize.",
       "After the contest, I got some prizes. Of course, I sometimes think taking good pictures is difficult. But I don't think that I [ あ ] when I can't get a prize. I will [ い ] pictures in high school."
+    ]},
+    yuki:{ title:"Yuki の作文「町のボランティア」", paras:[
+      "Last summer, I joined a volunteer activity in my town. Every Saturday morning, we cleaned the river near the station. At first, I thought it would be boring.",
+      "But many people joined, and we talked a lot while cleaning. An old man taught me the names of the birds by the river. I was surprised that there were so many kinds of birds in my town.",
+      "After two months, the river became much cleaner. One day, a little girl said to me, \"The water is beautiful now!\" Her words made me very happy. I learned that small actions can change our town.",
+      "Now I want to do more for my town. Next, I will join a group that plants flowers in the park. I hope my town will become a place that everyone loves."
+    ]},
+    email:{ title:"メール：Kenta と Aya のやりとり", paras:[
+      "From: Kenta — Hi Aya! Our school festival is next Sunday. I'm going to play the guitar with my band at 2 p.m. Can you come? After the show, let's eat takoyaki together. My sister will make it at the cooking club.",
+      "From: Aya — Hi Kenta! That sounds great. I'll come at 1 p.m. so I can see the art club's pictures first. I love takoyaki! Should I bring anything? See you on Sunday."
+    ]},
+    max:{ title:"Tom の犬 Max", paras:[
+      "Tom has a big brown dog. Its name is Max. Tom got Max three years ago on his birthday.",
+      "Every morning, Tom walks Max in the park before school. Max likes to run and play with a ball. Sometimes other dogs come, and they play together.",
+      "On weekends, Tom and his family take Max to the river. Max loves swimming. Tom takes many pictures of Max. Max is Tom's best friend."
+    ]},
+    online:{ title:"長文：オンライン学習について", paras:[
+      "These days, more students study online. Online lessons have several good points. Students can learn at home, so they do not need to travel to school. They can also watch the lessons again if they do not understand something.",
+      "However, online study has some problems, too. Some students find it hard to focus at home. Also, they cannot easily ask questions or talk with friends. Teachers say that talking with classmates is an important part of learning.",
+      "Experts say the best way is to use both online and classroom lessons. For example, students can watch a video lesson at home and then discuss it at school. In this way, they can enjoy the good points of both."
     ]}
   };
   // 3級「長文読解」ジャンル（答えはすべて本文中にある抜き出し型）
@@ -1002,6 +1023,30 @@
     {t:"fill", p:"daiki", q:"空所(う)に入る英語1語を本文から抜き出そう。ヒント：第3段落のおじいさんのことば。", en:"She said, \"This picture is really [ ___ ].\"", a:"good", ex:"第3段落 Your picture is already good の good が先生の really good につながる。"},
     {t:"fill", p:"daiki", q:"空所(あ)に入る英語3語を本文から抜き出そう。ヒント：第2段落の最後。半角スペースで区切る。", en:"But I don't think that I [ ___ ] when I can't get a prize.", a:"should stop taking", ex:"第2段落 Maybe I should stop taking pictures の3語。前の気持ちとの対比。"},
     {t:"fill", p:"daiki", q:"空所(い)に入る英語2語を本文から抜き出そう。ヒント：第3段落のおじいさんのことば。半角スペースで区切る。", en:"I will [ ___ ] pictures in high school.", a:"keep taking", ex:"第3段落 You should keep taking pictures の keep taking。keep ～ing＝〜し続ける。"}
+  ];
+  // 内容一致（選択式）の長文読解を追加
+  BANK["3"].reading = BANK["3"].reading.concat([
+    {t:"mc", p:"yuki", q:"質問: What did Yuki do every Saturday morning?", ch:["She cleaned the river.","She played soccer.","She studied at home.","She visited the zoo."], a:0, ex:"第1段落 we cleaned the river near the station。"},
+    {t:"mc", p:"yuki", q:"質問: How did Yuki feel about the activity at first?", ch:["She thought it would be boring.","She was very excited.","She was angry.","She was hungry."], a:0, ex:"第1段落 I thought it would be boring。"},
+    {t:"mc", p:"yuki", q:"質問: What did the old man teach Yuki?", ch:["The names of the birds.","How to swim.","How to cook.","The way to the station."], a:0, ex:"第2段落 taught me the names of the birds。"},
+    {t:"mc", p:"yuki", q:"質問: Why was Yuki happy?", ch:["A girl said the water was beautiful now.","She got a prize.","She found money.","School was closed."], a:0, ex:"第3段落 the girl の言葉でうれしくなった。"},
+    {t:"mc", p:"yuki", q:"質問: What will Yuki do next?", ch:["Join a group that plants flowers.","Move to another town.","Stop volunteering.","Buy a bird."], a:0, ex:"第4段落 a group that plants flowers in the park。"},
+    {t:"mc", p:"email", q:"質問: What will Kenta do at the festival?", ch:["Play the guitar with his band.","Sell takoyaki.","Show pictures.","Dance on the stage."], a:0, ex:"Kentaのメール play the guitar with my band。"},
+    {t:"mc", p:"email", q:"質問: What time will Aya arrive?", ch:["At 1 p.m.","At 2 p.m.","At 3 p.m.","At noon."], a:0, ex:"Ayaのメール I'll come at 1 p.m.。"},
+    {t:"mc", p:"email", q:"質問: What does Aya want to do before the show?", ch:["See the art club's pictures.","Eat lunch.","Buy a guitar.","Go home."], a:0, ex:"see the art club's pictures first。"},
+    {t:"mc", p:"email", q:"質問: Who will make the takoyaki?", ch:["Kenta's sister.","Aya.","Kenta.","The teacher."], a:0, ex:"My sister will make it。"}
+  ]);
+  BANK["4"].reading = [
+    {t:"mc", p:"max", q:"質問: What color is Max?", ch:["Brown.","Black.","White.","Gray."], a:0, ex:"第1段落 a big brown dog。"},
+    {t:"mc", p:"max", q:"質問: When did Tom get Max?", ch:["On his birthday, three years ago.","Last week.","Yesterday.","This morning."], a:0, ex:"got Max three years ago on his birthday。"},
+    {t:"mc", p:"max", q:"質問: What does Tom do every morning?", ch:["He walks Max in the park.","He swims in the river.","He plays soccer.","He reads books."], a:0, ex:"第2段落 Tom walks Max in the park。"},
+    {t:"mc", p:"max", q:"質問: What does Max love to do at the river?", ch:["Swimming.","Sleeping.","Eating.","Reading."], a:0, ex:"第3段落 Max loves swimming。"}
+  ];
+  BANK["pre2"].reading = [
+    {t:"mc", p:"online", q:"質問: What is one good point of online lessons?", ch:["Students can learn at home.","Students must travel far.","Lessons cannot be repeated.","Students cannot use videos."], a:0, ex:"第1段落 learn at home / watch again。"},
+    {t:"mc", p:"online", q:"質問: What problem do some students have?", ch:["They find it hard to focus at home.","They have too many friends.","They cannot watch videos.","They travel too much."], a:0, ex:"第2段落 hard to focus at home。"},
+    {t:"mc", p:"online", q:"質問: What do teachers say is important?", ch:["Talking with classmates.","Sleeping in class.","Studying alone always.","Skipping lessons."], a:0, ex:"第2段落 talking with classmates is important。"},
+    {t:"mc", p:"online", q:"質問: What is the best way according to experts?", ch:["Using both online and classroom lessons.","Only online lessons.","Only classroom lessons.","No lessons at all."], a:0, ex:"第3段落 use both online and classroom lessons。"}
   ];
 
   // 追加問題（拡充3：使える英語学+10、4技能別問題を全級拡充）
