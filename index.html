@@ -1,4 +1,6 @@
-<!-- mado_loop.html | v0.12 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.13 | 2026-06-18 JST -->
+<!--   v0.12→v0.13：判定テスト結果に「苦手を鍛える」導線を追加。成績の先生へ送信（GAS連携）を統合。 -->
+<!--   送信先=旧mado_drillと同じGAS_URL。?cls=3A&num=5&name=… と端末記憶で自動入力。 -->
 <!--   v0.11→v0.12：苦手ジャンルの自動おすすめを追加。正答率データから「今日のおすすめ」カード＋苦手タイルに「苦手」バッジ。 -->
 <!--   v0.10→v0.11：使える英語学（中学入学準備）を+10で計20問。4技能別問題を全級拡充。総計413問。 -->
 <!--   v0.9→v0.10：レベルバーを全幅に拡張＋目盛り線追加。級間を4分割（3中間点）した連続位置でポインタ表示。 -->
@@ -228,6 +230,14 @@
   .passmark.pass{background:linear-gradient(140deg,#27b07c,var(--ok));box-shadow:0 8px 18px rgba(31,157,107,.28);}
   .passmark.fail{background:linear-gradient(140deg,#e36b6b,var(--ng));box-shadow:0 8px 18px rgba(214,84,84,.24);}
   .threshold{font-size:13px;color:var(--hint);}
+  .send-box{margin-top:18px;padding-top:16px;border-top:1px solid var(--line2);}
+  .send-h{font-size:13px;font-weight:800;color:var(--muted);margin-bottom:6px;}
+  .rnum{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:4px 0 12px;}
+  #scls,#sid,#snm{font-family:var(--jp);font-size:16px;width:92px;text-align:center;
+    padding:9px 8px;border:1.5px solid var(--line);border-radius:10px;outline:none;}
+  #snm{width:130px;}
+  #scls:focus,#sid:focus,#snm:focus{border-color:var(--brand2);box-shadow:0 0 0 4px var(--brand-bg);}
+  .rnote{font-size:12px;color:var(--hint);margin-top:10px;}
 
   .foot{text-align:center;font-size:11px;color:var(--hint);margin-top:18px;}
 
@@ -268,7 +278,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.12";
+  var APP_VER = "v0.13";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1486,12 +1496,49 @@
     return "practice";
   }
 
+  // ---- 成績を先生に送信（GAS連携） ----
+  // ★先生へ：mado_score_gas のウェブアプリURLを下に貼ると有効になります（?cls=3A&num=5&name=… で自動入力）。
+  var GAS_URL="https://script.google.com/macros/s/AKfycbxzR0bVxi_SV8d3hKbOSPnZZ1KLI0Ye_1y5w2wo0vPE0o6vvd8lvtiwPPF8wLyzn5Wiwg/exec";
+  function idStore(k,v){try{localStorage.setItem("mado_"+k,v);}catch(e){}}
+  function idLoad(k){try{return localStorage.getItem("mado_"+k)||"";}catch(e){return "";}}
+  function fillIdentity(){
+    var prm; try{prm=new URLSearchParams(location.search);}catch(e){prm=null;}
+    var c=$("scls"),n=$("sid"),m=$("snm"); if(!c)return;
+    c.value=(prm&&prm.get("cls"))||idLoad("cls")||"";
+    n.value=(prm&&prm.get("num"))||idLoad("num")||"";
+    m.value=(prm&&prm.get("name"))||idLoad("name")||"";
+  }
+  function sendScore(){
+    var r=S.lastResult||{}, msg=$("sendmsg");
+    var cls=$("scls").value.trim(), num=$("sid").value.trim(), name=$("snm").value.trim();
+    if(!cls||!num){msg.textContent="組と番号を入れてね";return;}
+    if(!GAS_URL){msg.textContent="（先生へ：HTML内の GAS_URL が未設定です）";return;}
+    idStore("cls",cls); idStore("num",num); idStore("name",name);
+    var btn=$("send"); btn.disabled=true; btn.textContent="送信中…";
+    var payload={cls:cls,num:num,name:name,ver:APP_VER,
+      grade:(gradeMeta(r.grade)?gradeMeta(r.grade).name:r.grade),
+      mode:(r.mode==="quick"?"クイック":"フル"),
+      score:r.score,total:r.total,pct:r.pct,pass:(r.pass?"合格":"不合格"),
+      ok:r.score,warn:0,ng:(r.total-r.score)};
+    fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
+      .then(function(res){return res.json();})
+      .then(function(j){ if(j&&j.result==="ok"){btn.textContent="送信OK ✓";msg.textContent="記録できたよ！おつかれさま。";}
+        else{throw new Error((j&&j.message)||"server error");} })
+      .catch(function(err){ btn.disabled=false; btn.textContent="先生に送信";
+        msg.textContent="送信できなかった…電波を確認してもう一度。（"+String(err).slice(0,40)+"）"; });
+  }
+
   function renderTestResult(){
     setLoop("test");
     var t=S.test, gm=gradeMeta(S.grade);
     var total=t.queue.length, pct=total?Math.round(t.ok/total*100):0;
     var pass=(t.ok/total)>=PASS;
     if(LEVEL_ORDER.indexOf(S.grade)>=0) saveLastTest({grade:S.grade, pct:pct, pass:pass, ts:Date.now()});
+    S.lastResult={grade:S.grade, score:t.ok, total:total, pct:pct, pass:pass, mode:t.mode};
+    var rec=recommendGenre(S.grade);
+    var primary = (rec.type==="weak")
+      ? '<button class="act" id="rWeak" data-g="'+rec.ge.id+'" style="background:'+rec.ge.c+';border-color:'+rec.ge.c+'">🎯 苦手な'+rec.ge.name+'を鍛える →</button>'
+      : '<button class="act" id="rTrain">🏋️ 訓練にもどる</button>';
     app.innerHTML=''+
     '<div class="card center">'+
       '<div class="sectlabel" style="justify-content:center;color:var(--brand-ink)">'+esc(gm.name)+' 判定テスト 結果</div>'+
@@ -1501,18 +1548,29 @@
       '<div class="rscore">正解 <b>'+t.ok+'</b> / '+total+' 問</div>'+
       '<div class="passmark '+(pass?'pass':'fail')+'">'+(pass?'🎉 合格ライン突破！':'あと少し… 不合格')+'</div>'+
       '<div class="threshold">合格基準：正答率65%以上（'+Math.ceil(total*PASS)+'問以上の正解で合格）</div>'+
-      '<div class="actions" style="justify-content:center;margin-top:16px;">'+
-        '<button class="act" id="rTrain">🏋️ 訓練にもどる</button>'+
+      (rec.type==="weak"?'<div class="hint" style="margin-top:10px;">いまの苦手は <b style="color:'+rec.ge.c+'">'+esc(rec.ge.name)+'</b>（正答率 '+rec.pct+'%）。鍛えてもう一度ループを回そう。</div>':'')+
+      '<div class="actions" style="justify-content:center;margin-top:14px;">'+
+        primary+
         '<button class="act sec" id="rRetry">📋 もう一度テスト</button>'+
         '<button class="act ghost" id="rHome">🏠 ホーム</button>'+
       '</div>'+
-      '<div class="hint" style="margin-top:12px;">'+(pass
-        ? '次の級にチャレンジしてみよう！（ホームで級を変更）'
-        : 'まちがえたジャンルを訓練して、もう一度ループを回そう。')+'</div>'+
+      '<div class="send-box">'+
+        '<div class="send-h">📨 成績を先生に送信</div>'+
+        '<div class="rnum">'+
+          '<input id="scls" type="text" autocomplete="off" placeholder="組(例:3A)" aria-label="組">'+
+          '<input id="sid" type="text" inputmode="numeric" autocomplete="off" placeholder="番号" aria-label="番号">'+
+          '<input id="snm" type="text" autocomplete="off" placeholder="名前" aria-label="名前">'+
+        '</div>'+
+        '<button class="act" id="send">先生に送信</button>'+
+        '<div class="rnote" id="sendmsg">組・番号・名前を入れて「先生に送信」を押してね</div>'+
+      '</div>'+
     '</div>';
-    $("rTrain").addEventListener("click",function(){S.q=null;go("train");});
+    var rw=$("rWeak"); if(rw)rw.addEventListener("click",function(){S.q=null;S.genre=this.getAttribute("data-g");go("train");});
+    var rt=$("rTrain"); if(rt)rt.addEventListener("click",function(){S.q=null;go("train");});
     $("rRetry").addEventListener("click",function(){go("testsetup");});
     $("rHome").addEventListener("click",function(){go("home");});
+    $("send").addEventListener("click",sendScore);
+    fillIdentity();
   }
 
   /* ============================ ルーター ============================ */
