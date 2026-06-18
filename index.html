@@ -1,4 +1,6 @@
-<!-- mado_loop.html | v0.2 (UI/UX向上) | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.3 | 2026-06-18 JST -->
+<!--   v0.2→v0.3：準2級・準2級プラスを追加（全8級）。選択肢の表示順をランダム化（正答が①固定の罠を解消）。 -->
+<!--   ヘッダに「いまの目安：英検◯級レベル」を直近の判定テスト結果から算出して表示。 -->
 <!--   v0.1→v0.2：学校教材向けに配色・タイポ・余白を刷新。級/ジャンルごとのアクセント色、 -->
 <!--   ソフトシャドウのカード、判定結果のリング表示、採点フィードバックのポップ演出を追加。 -->
 <!--   英文フォントは可読性重視のサンセリフに変更（Comic Sans廃止）。prefers-reduced-motion対応。 -->
@@ -44,8 +46,16 @@
     background:linear-gradient(140deg,var(--brand2),var(--brand));box-shadow:0 6px 14px rgba(50,74,134,.28);}
   h1{font-size:21px;font-weight:800;margin:0;letter-spacing:.2px;}
   .tagline{font-size:12px;color:var(--muted);margin-top:1px;}
-  .ver{margin-left:auto;font-size:11px;color:var(--hint);background:#fff;border:1px solid var(--line);
-    padding:3px 9px;border-radius:999px;white-space:nowrap;}
+  .ver{font-size:11px;color:var(--hint);background:#fff;border:1px solid var(--line);
+    padding:3px 9px;border-radius:999px;white-space:nowrap;align-self:flex-start;}
+  .levelchip{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;
+    color:var(--brand-ink);background:var(--brand-bg);border:1px solid #d7e2f5;border-radius:999px;
+    padding:7px 13px;line-height:1.3;max-width:48%;text-align:right;}
+  .levelchip .lc-ic{font-size:14px;flex:0 0 auto;}
+  .levelchip b{color:var(--brand);}
+  .levelchip.none{color:var(--muted);background:#fff;border-color:var(--line);font-weight:600;}
+  @media(max-width:560px){.levelchip{max-width:100%;order:3;margin:8px 0 0;width:100%;justify-content:center;text-align:center;}
+    header{flex-wrap:wrap;}.ver{margin-left:auto;}}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
     padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow);}
@@ -199,6 +209,7 @@
         <div class="tagline">ジャンル訓練 → 判定テストで、合格へ。</div>
       </div>
     </div>
+    <div class="levelchip none" id="levelchip"></div>
     <span class="ver" id="ver">v0.2</span>
   </header>
 
@@ -216,16 +227,18 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.2 UI";
+  var APP_VER = "v0.3";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
-    {id:"7", name:"7級", sub:"小学校中学年〜・アルファベットと身近な単語", isNew:true, c:"#e2735a", cbg:"#fdeee9"},
-    {id:"6", name:"6級", sub:"小学校高学年〜・基本の文と日常表現",       isNew:true, c:"#d99a2b", cbg:"#fbf2df"},
-    {id:"5", name:"5級", sub:"中学初級・be動詞と一般動詞",              c:"#2f9e6e", cbg:"#e7f6ef"},
-    {id:"4", name:"4級", sub:"中学中級・過去形や比較",                 c:"#2f80c4", cbg:"#e6f1fb"},
-    {id:"3", name:"3級", sub:"中学卒業・長文と英作文",                 c:"#5560c8", cbg:"#ecedfb"},
-    {id:"2", name:"2級", sub:"高校卒業・社会的な話題",                 c:"#8a5cc0", cbg:"#f2ebfa"}
+    {id:"7",        name:"7級",      sub:"小学校中学年〜・アルファベットと身近な単語", isNew:true, c:"#e2735a", cbg:"#fdeee9"},
+    {id:"6",        name:"6級",      sub:"小学校高学年〜・基本の文と日常表現",       isNew:true, c:"#d99a2b", cbg:"#fbf2df"},
+    {id:"5",        name:"5級",      sub:"中学初級・be動詞と一般動詞",              c:"#2f9e6e", cbg:"#e7f6ef"},
+    {id:"4",        name:"4級",      sub:"中学中級・過去形や比較",                 c:"#2f80c4", cbg:"#e6f1fb"},
+    {id:"3",        name:"3級",      sub:"中学卒業・長文と英作文",                 c:"#5560c8", cbg:"#ecedfb"},
+    {id:"pre2",     name:"準2級",    sub:"高校中級・長めの長文と英作文",            c:"#6f5cc8", cbg:"#eeeafb"},
+    {id:"pre2plus", name:"準2級プラス", sub:"準2と2の橋渡し・2025年新設",            isNew:true, c:"#9a5cc0", cbg:"#f3ebfa"},
+    {id:"2",        name:"2級",      sub:"高校卒業・社会的な話題",                 c:"#c05a86", cbg:"#faecf1"}
   ];
   var GENRES = [
     {id:"vocab",     name:"単語",         icon:"📖", desc:"単語・熟語・コロケーション", c:"#2f80c4", cbg:"#e6f1fb"},
@@ -374,6 +387,47 @@
       ]
     },
 
+    /* ---------------- 準2級 ---------------- */
+    "pre2":{
+      vocab:[
+        {t:"mc", en:"The company decided to (   ) the new project.", q:"(   ) に入る語は？", ch:["launch","arrive","belong","attend"], a:0, ex:"launch＝（事業などを）開始する。"},
+        {t:"fill", q:"「〜を準備する」を英語で（p で始まる）。", a:"prepare", ex:"prepare＝準備する。prepare for the exam。"},
+        {t:"mc", en:"She has a positive (   ) toward her work.", q:"(   ) に入る語は？", ch:["attitude","weather","machine","engine"], a:0, ex:"attitude＝態度・姿勢。"}
+      ],
+      grammar:[
+        {t:"mc", en:"I have been studying English (   ) three years.", q:"(   ) に入る語は？", ch:["for","since","during","while"], a:0, ex:"期間の前は for。for three years＝3年間。"},
+        {t:"mc", en:"If I (   ) more time, I would travel abroad.", q:"(   ) に入る語は？", ch:["had","have","will have","has"], a:0, ex:"仮定法過去：If＋過去形, would＋原形。"},
+        {t:"mc", en:"The movie was so boring that I (   ) asleep.", q:"(   ) に入る語は？", ch:["fell","felt","fall","feel"], a:0, ex:"fall asleep＝眠りに落ちる。過去形 fell。"}
+      ],
+      technique:[
+        {t:"mc", q:"【準2級・大問1】語彙が難化。効果的な対策は？", ch:["接頭辞・接尾辞から意味を推測する","全部丸暗記する","日本語訳に頼る","選択肢を見ない"], chJp:true, a:0, ex:"un-/re-/-tion など語の部品から意味を推測できる。"},
+        {t:"mc", q:"【準2級・Eメール】先に見るべきは？", ch:["件名と最初の段落で状況をつかむ","署名だけ","最終文だけ","選択肢だけ"], chJp:true, a:0, ex:"状況設定を最初につかむと設問が解きやすい。"}
+      ],
+      practice:[
+        {t:"mc", en:"A: Would you mind (   ) the window? B: Not at all.", q:"(   ) に入る語は？", ch:["opening","to open","open","opened"], a:0, ex:"mind のあとは動名詞（〜ing）。"},
+        {t:"mc", q:"英文: Tom moved to Osaka to study design. 質問: Why did Tom move to Osaka?", ch:["To study design.","To meet friends.","To find a job.","To play sports."], a:0, ex:"to study design（目的のto不定詞）が理由。"}
+      ]
+    },
+
+    /* ---------------- 準2級プラス（2025年新設） ---------------- */
+    "pre2plus":{
+      vocab:[
+        {t:"mc", en:"Volunteers helped (   ) the damaged houses.", q:"(   ) に入る語は？", ch:["rebuild","reduce","remind","remove"], a:0, ex:"rebuild＝建て直す。re-（再び）＋build。"},
+        {t:"fill", q:"「効率的な」を英語で（e で始まる）。", a:"efficient", ex:"efficient＝効率的な。"}
+      ],
+      grammar:[
+        {t:"mc", en:"The report needs (   ) before the deadline.", q:"(   ) に入る語は？", ch:["to be finished","finishing to","finish","be finished"], a:0, ex:"need to be＋過去分詞＝〜される必要がある。"},
+        {t:"mc", en:"(   ) harder, he would have passed the exam.", q:"(   ) に入る語は？", ch:["Had he studied","If he studies","He studied","Did he study"], a:0, ex:"仮定法過去完了の倒置：Had＋主語＋過去分詞。"}
+      ],
+      technique:[
+        {t:"mc", q:"【準2+ 長文】筆者の主張をつかむコツは？", ch:["逆接(however/but)の後に注目","固有名詞を数える","最初の単語だけ読む","結論を無視する"], chJp:true, a:0, ex:"逆接の後ろに筆者の言いたいことが来やすい。"}
+      ],
+      practice:[
+        {t:"mc", en:"Despite the rain, the event (   ) as planned.", q:"(   ) に入る語は？", ch:["took place","take place","taking place","taken place"], a:0, ex:"take place＝開催される。過去形 took place。"},
+        {t:"mc", en:"The new policy aims (   ) traffic accidents.", q:"(   ) に入る語は？", ch:["to reduce","reducing","reduce","reduced"], a:0, ex:"aim to＋原形＝〜することを目指す。"}
+      ]
+    },
+
     /* ---------------- 2級 ---------------- */
     "2":{
       vocab:[
@@ -431,6 +485,33 @@
   }
   function loadGrade(){try{return localStorage.getItem(GRADE_KEY)||"3";}catch(e){return "3";}}
   function saveGrade(g){try{localStorage.setItem(GRADE_KEY,g);}catch(e){}}
+
+  /* ---- 実力レベルの目安（直近の判定テスト結果から算出） ---- */
+  var LASTTEST_KEY="mado_loop_lasttest_v1";
+  var LEVEL_ORDER=["7","6","5","4","3","pre2","pre2plus","2"]; // 易→難
+  function saveLastTest(o){try{localStorage.setItem(LASTTEST_KEY,JSON.stringify(o));}catch(e){}}
+  function loadLastTest(){try{return JSON.parse(localStorage.getItem(LASTTEST_KEY));}catch(e){return null;}}
+  function estimateLevel(){
+    var lt=loadLastTest(); if(!lt) return {state:"none"};
+    var i=LEVEL_ORDER.indexOf(lt.grade);
+    if(lt.pass) return {state:"level", id:lt.grade};   // 合格 → その級レベル
+    if(i<=0)    return {state:"below"};                 // 最易級で不合格
+    return {state:"level", id:LEVEL_ORDER[i-1]};        // 不合格 → 一段やさしい級
+  }
+  function updateLevelChip(){
+    var el=document.getElementById("levelchip"); if(!el) return;
+    var lv=estimateLevel();
+    if(lv.state==="none"){
+      el.className="levelchip none";
+      el.innerHTML='<span class="lc-ic">📊</span>まだ判定なし — 判定テストで力をはかろう';
+    }else if(lv.state==="below"){
+      el.className="levelchip";
+      el.innerHTML='<span class="lc-ic">📊</span>いまの目安：<b>英検7級</b>にチャレンジ中';
+    }else{
+      el.className="levelchip";
+      el.innerHTML='<span class="lc-ic">📊</span>いまの目安：<b>英検'+esc(gradeMeta(lv.id).name)+'</b>レベル';
+    }
+  }
 
   function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 
@@ -568,8 +649,11 @@
              '<div class="sub">英語で入力 → Enterまたは「判定」</div>';
     }
     var enCls=q.chJp?'':' en';
-    return '<div class="choices">'+q.ch.map(function(c,i){
-      return '<button class="ch'+enCls+'" data-i="'+i+'"><span class="mk">'+(i+1)+'</span><span class="txt">'+(q.chJp?esc(c):enHTML(c))+'</span></button>';
+    // 表示順をシャッフル（data-iは元の番号を保持するので採点はそのまま正しい）
+    var order=shuffle(q.ch.map(function(_,i){return i;}));
+    return '<div class="choices">'+order.map(function(orig,disp){
+      var c=q.ch[orig];
+      return '<button class="ch'+enCls+'" data-i="'+orig+'"><span class="mk">'+(disp+1)+'</span><span class="txt">'+(q.chJp?esc(c):enHTML(c))+'</span></button>';
     }).join("")+'</div>';
   }
 
@@ -723,6 +807,7 @@
     var t=S.test, gm=gradeMeta(S.grade);
     var total=t.queue.length, pct=total?Math.round(t.ok/total*100):0;
     var pass=(t.ok/total)>=PASS;
+    saveLastTest({grade:S.grade, pct:pct, pass:pass, ts:Date.now()});
     app.innerHTML=''+
     '<div class="card center">'+
       '<div class="sectlabel" style="justify-content:center;color:var(--brand-ink)">'+esc(gm.name)+' 判定テスト 結果</div>'+
@@ -754,6 +839,7 @@
     else if(screen==="testsetup")renderTestSetup();
     else if(screen==="test")renderTest();
     else if(screen==="testresult")renderTestResult();
+    updateLevelChip();
   }
 
   document.getElementById("ver").textContent=APP_VER;
