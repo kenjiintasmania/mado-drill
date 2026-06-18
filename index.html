@@ -1,0 +1,687 @@
+<!-- mado_loop.html | v0.1 (骨格づくり) | 2026-06-18 JST -->
+<!-- 「ジャンルごとに訓練」▶「英検級判定テスト」をループで回す英検トレーニングアプリ。 -->
+<!--   フェーズ計画：①骨格づくり(本版) → ②UI/UX向上 → ③問題数増加。 -->
+<!--   級：7・6・5・4・3・2級（7級/6級＝2027年1月新設予定。小学生向けCBT）。 -->
+<!--   訓練ジャンル：単語／文法／大問テクニック／本番練習。ランダム出題→採点・解説→ジャンル別正答率。 -->
+<!--   判定テスト：65%以上で合格（英検の判定基準を採用）。フルモード／クイックモードの2種。 -->
+<!--   問題データは BANK[級][ジャンル] の配列。フェーズ③で各級の問題を増やす設計。 -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英検ループ訓練 ― 訓練▶判定テスト</title>
+<style>
+  :root{
+    --jp:"游ゴシック","Yu Gothic","Hiragino Sans","Noto Sans JP",sans-serif;
+    --en:"Comic Sans MS","Comic Sans",cursive;
+    --ink:#1f2328; --muted:#5f6368; --hint:#8a8f94;
+    --line:#dadce0; --card:#ffffff; --bg:#f6f7f8; --blue:#185fa5; --blue-bg:#e6f1fb;
+    --ok:#0f6e56; --ok-bg:#e1f5ee; --ng:#a32d2d; --ng-bg:#fceaea;
+    --warn:#9a6b00; --warn-bg:#fff6dd; --gold:#b8860b; --gold-bg:#fff7e0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:var(--jp);color:var(--ink);
+    -webkit-text-size-adjust:100%;padding:16px;}
+  .wrap{max-width:760px;margin:0 auto;}
+  header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 2px 12px;}
+  h1{font-size:20px;font-weight:600;margin:0;}
+  .ver{font-size:12px;color:var(--hint);}
+  .en{font-family:var(--en);}
+  .y{font-family:"Arial",sans-serif;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px;}
+  .muted{color:var(--muted);} .hint{color:var(--hint);font-size:13px;}
+
+  /* ステップ表示（ループ） */
+  .loop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 2px 14px;font-size:13px;color:var(--muted);}
+  .loop .step{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;}
+  .loop .step.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);font-weight:700;}
+  .loop .arr{color:var(--hint);}
+
+  /* 級セレクタ */
+  .grades{display:flex;gap:8px;flex-wrap:wrap;}
+  .gchip{flex:1 1 100px;min-width:96px;border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:10px 8px;text-align:center;cursor:pointer;}
+  .gchip:hover{border-color:var(--blue);}
+  .gchip.on{border-color:var(--blue);background:var(--blue-bg);}
+  .gchip .gn{font-size:18px;font-weight:800;color:var(--blue);}
+  .gchip .gs{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.3;}
+
+  /* ジャンルタイル */
+  .genres{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .gtile{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px;cursor:pointer;text-align:left;}
+  .gtile:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(24,95,165,.08);}
+  .gtile.on{border-color:var(--blue);background:var(--blue-bg);}
+  .gtile .gi{font-size:22px;}
+  .gtile .gl{font-size:16px;font-weight:700;margin-top:4px;}
+  .gtile .gd{font-size:12px;color:var(--muted);margin-top:2px;}
+  .gtile .acc{font-size:12px;color:var(--ok);font-weight:700;margin-top:6px;}
+  .gtile .acc.none{color:var(--hint);font-weight:400;}
+
+  /* 共通ボタン */
+  .actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;}
+  .act{font-family:var(--jp);font-size:16px;padding:10px 20px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--blue);background:var(--blue);color:#fff;}
+  .act:hover{opacity:.92;}
+  .act.sec{background:#fff;color:var(--blue);}
+  .act.ghost{background:#fff;color:var(--muted);border-color:var(--line);}
+  .act.big{font-size:18px;padding:14px 22px;width:100%;justify-content:center;text-align:center;}
+  .act:disabled{opacity:.5;cursor:default;}
+
+  /* 訓練ヘッダ */
+  .tbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .pill{font-size:13px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;}
+  .pill.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);font-weight:700;}
+  .stat{margin-left:auto;font-size:13px;color:var(--muted);}
+  .stat b{color:var(--ink);}
+
+  /* 出題カード */
+  .tech{display:inline-block;font-size:13px;font-weight:700;color:var(--blue);
+    background:var(--blue-bg);border-radius:7px;padding:4px 10px;margin-bottom:10px;}
+  .prog{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .q{font-size:17px;margin-bottom:10px;line-height:1.5;}
+  .sent{font-family:var(--en);font-size:21px;line-height:1.6;margin-bottom:14px;color:#222;}
+  .choices{display:flex;flex-direction:column;gap:9px;}
+  .ch{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;border-radius:10px;
+    padding:11px 14px;cursor:pointer;font-size:17px;text-align:left;}
+  .ch:hover{border-color:var(--blue);}
+  .ch .mk{flex:0 0 24px;height:24px;border-radius:50%;border:1px solid var(--line);display:flex;
+    align-items:center;justify-content:center;font-size:13px;color:var(--muted);}
+  .ch.en .txt{font-family:var(--en);}
+  .ch.pick{border-color:var(--blue);background:var(--blue-bg);}
+  .ch.right{border-color:var(--ok);background:var(--ok-bg);}
+  .ch.right .mk{border-color:var(--ok);background:var(--ok);color:#fff;}
+  .ch.wrong{border-color:var(--ng);background:var(--ng-bg);}
+  .ch.wrong .mk{border-color:var(--ng);background:var(--ng);color:#fff;}
+  .ch.dim{opacity:.6;}
+
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .lbl{font-size:16px;color:var(--muted);}
+  #ans{font-family:var(--en);font-size:22px;width:300px;max-width:100%;
+    padding:7px 10px;border:1px solid var(--line);border-radius:8px;outline:none;}
+  #ans:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg);}
+  #ans:disabled{background:#f3f4f5;}
+  .sub{font-size:12px;color:var(--hint);margin:4px 0 0;}
+
+  #fb{min-height:8px;margin-top:14px;}
+  .verdict{font-size:18px;font-weight:700;}
+  .ok{color:var(--ok);} .ng{color:var(--ng);} .warn{color:var(--warn);}
+  .ansrow{font-size:16px;margin-top:6px;}
+  .ansrow .en{font-weight:bold;font-size:19px;}
+  .exp{font-size:15px;color:#3a3f44;margin-top:8px;border-left:3px solid var(--blue);
+    padding:4px 0 4px 12px;line-height:1.6;background:#f7fafe;}
+
+  /* 判定テスト結果 */
+  .center{text-align:center;}
+  .score-big{font-size:60px;font-weight:800;color:var(--blue);line-height:1.1;margin:6px 0;}
+  .score-big .tot{font-size:28px;color:var(--muted);font-weight:700;}
+  .ratebar{height:14px;border-radius:999px;background:#eceef0;overflow:hidden;margin:12px 0 6px;}
+  .ratebar > i{display:block;height:100%;background:var(--blue);}
+  .passmark{display:inline-block;font-size:22px;font-weight:800;padding:8px 22px;border-radius:999px;margin:10px 0;}
+  .passmark.pass{color:#fff;background:var(--ok);}
+  .passmark.fail{color:#fff;background:var(--ng);}
+  .threshold{font-size:13px;color:var(--hint);}
+
+  @media(max-width:520px){
+    .sent{font-size:18px;}#ans{font-size:19px;width:100%;}h1{font-size:18px;}
+    .genres{grid-template-columns:1fr;}.score-big{font-size:50px;}.ch{font-size:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>英検ループ訓練</h1>
+    <span class="ver" id="ver">v0.1 骨格</span>
+  </header>
+
+  <div class="loop" id="loop">
+    <span class="step" data-st="home">🏠 ホーム</span><span class="arr">▶</span>
+    <span class="step" data-st="train">🏋️ ジャンル訓練</span><span class="arr">▶</span>
+    <span class="step" data-st="test">📋 判定テスト</span><span class="arr">↺</span>
+  </div>
+
+  <div id="app"></div>
+</div>
+
+<script>
+(function(){
+  var APP_VER = "v0.1 骨格";
+
+  /* ============================ 級・ジャンル定義 ============================ */
+  var GRADES = [
+    {id:"7", name:"7級", sub:"小学校中学年〜・アルファベットと身近な単語", isNew:true},
+    {id:"6", name:"6級", sub:"小学校高学年〜・基本の文と日常表現", isNew:true},
+    {id:"5", name:"5級", sub:"中学初級・be動詞と一般動詞"},
+    {id:"4", name:"4級", sub:"中学中級・過去形や比較"},
+    {id:"3", name:"3級", sub:"中学卒業・長文と英作文"},
+    {id:"2", name:"2級", sub:"高校卒業・社会的な話題"}
+  ];
+  var GENRES = [
+    {id:"vocab",     name:"単語",         icon:"📖", desc:"単語・熟語・コロケーション"},
+    {id:"grammar",   name:"文法",         icon:"🧩", desc:"語順・時制・三単現"},
+    {id:"technique", name:"大問テクニック", icon:"🎯", desc:"大問ごとの解き方のコツ"},
+    {id:"practice",  name:"本番練習",      icon:"📝", desc:"本番の形式で力だめし"}
+  ];
+  function gradeMeta(id){for(var i=0;i<GRADES.length;i++)if(GRADES[i].id===id)return GRADES[i];}
+  function genreMeta(id){for(var i=0;i<GENRES.length;i++)if(GENRES[i].id===id)return GENRES[i];}
+
+  /* ============================ 問題バンク ============================
+     q   : 日本語の指示文
+     en  : 英文（任意。Comic Sansで表示）
+     t   : "mc"=4択 / "fill"=打ち込み
+     ch  : 選択肢（mc）   a: 正解インデックス(mc) / 正解文字列(fill)
+     ac  : 別解（fill, 任意）   chJp: 選択肢が日本語のとき true
+     ex  : 解説
+     ※フェーズ③で各級・各ジャンルの配列に問題を追加していく。
+  ===================================================================== */
+  var BANK = {
+    /* ---------------- 7級（新設・小学校中学年） ---------------- */
+    "7":{
+      vocab:[
+        {t:"mc", q:"「ねこ」を表す英語をえらぼう。", ch:["cat","dog","bird","fish"], a:0, ex:"cat＝ねこ。動物の名前は絵といっしょに覚えよう。"},
+        {t:"mc", q:"🍎 これを表す英語は？", ch:["apple","orange","banana","grape"], a:0, ex:"apple＝りんご。"},
+        {t:"mc", q:"「赤」を表す英語は？", ch:["red","blue","green","black"], a:0, ex:"red＝赤。色のことばはよく出るよ。"},
+        {t:"fill", q:"「犬」を英語で書こう。", a:"dog", ex:"dog＝犬。"},
+        {t:"mc", q:"あいさつ「おはよう」にあう英語は？", ch:["Good morning.","Good night.","Thank you.","Goodbye."], chJp:false, a:0, ex:"Good morning.＝おはよう。"}
+      ],
+      grammar:[
+        {t:"mc", en:"I (   ) a student.", q:"(   ) に入る語は？", ch:["am","is","are","be"], a:0, ex:"主語が I のときは am。I am ～＝わたしは～です。"},
+        {t:"mc", en:"This is (   ) apple.", q:"(   ) に入る語は？", ch:["an","a","the","×"], a:0, ex:"母音(a,i,u,e,o)の音で始まる語の前は an。"},
+        {t:"mc", q:"「これは本です」にあう英語は？", ch:["This is a book.","This a book is.","Book is this.","Is this book."], a:0, ex:"This is a ～. の語順を覚えよう。"}
+      ],
+      technique:[
+        {t:"mc", q:"【7級リーディング】絵に合う英文をえらぼう。 🏃 走っている男の子", ch:["The boy is running.","The boy is sleeping.","The boy is eating.","The boy is swimming."], a:0, ex:"7級は『英文を読んで、絵に合う文をえらぶ』形式。動作のことばに注目！"},
+        {t:"mc", q:"【7級リスニング】質問『What is this?』、絵は 🐶。あう答えは？", ch:["It's a dog.","It's a cat.","It's a bird.","It's a fish."], a:0, ex:"7級リスニングは絵についての質問。英文は2回読まれるよ。"},
+        {t:"mc", q:"7級のリスニングで、英文は何回読まれる？", ch:["2回","1回","3回","読まれない"], chJp:true, a:0, ex:"7級は英文が2回読まれる。1回目で全体、2回目で答えを確認しよう。"}
+      ],
+      practice:[
+        {t:"mc", en:"(   ) is your name?", q:"(   ) に入る語は？", ch:["What","Who","Where","When"], a:0, ex:"名前をたずねるときは What is your name?。"},
+        {t:"mc", q:"絵に合う英文は？ 🖊️ 青いペン", ch:["This is a blue pen.","This is a red pen.","This is a blue cup.","This is a blue book."], a:0, ex:"色（blue）と物（pen）の両方が合うものをえらぶ。"}
+      ]
+    },
+
+    /* ---------------- 6級（新設・小学校高学年） ---------------- */
+    "6":{
+      vocab:[
+        {t:"mc", q:"「学校」を表す英語は？", ch:["school","station","library","park"], a:0, ex:"school＝学校。"},
+        {t:"fill", q:"「家族」を英語で（f で始まる）。", a:"family", ex:"family＝家族。"},
+        {t:"mc", q:"「月曜日」は？", ch:["Monday","Sunday","Friday","Tuesday"], a:0, ex:"Monday＝月曜日。曜日は大文字で始める。"}
+      ],
+      grammar:[
+        {t:"mc", en:"I (   ) soccer every day.", q:"(   ) に入る語は？", ch:["play","plays","playing","played"], a:0, ex:"主語 I＋現在の習慣 → play（原形）。"},
+        {t:"mc", en:"She (   ) to school by bus.", q:"(   ) に入る語は？", ch:["goes","go","going","gone"], a:0, ex:"主語 She（三人称・単数）の現在形は goes。"},
+        {t:"mc", en:"(   ) you like music?", q:"(   ) に入る語は？", ch:["Do","Are","Is","Does"], a:0, ex:"一般動詞 like の疑問文。主語 you には Do。"}
+      ],
+      technique:[
+        {t:"mc", q:"【6級リーディング】英文を読み、内容に合う絵をえらぼう。 “I have a cat. It is small and white.”", ch:["小さい白いねこ 🐱","大きい黒い犬","白い鳥","小さい茶色のねこ"], chJp:true, a:0, ex:"6級は『まとまった英文を読み、内容に合う絵をえらぶ』形式。色や大小を正確に。"},
+        {t:"mc", en:"A: How are you?", q:"【6級リスニング】自然なやりとりをえらぼう。", ch:["I'm fine, thank you.","It's a dog.","Yes, I do.","I'm twelve."], a:0, ex:"6級リスニングは会話のやりとり。あいさつの定型を覚えよう。"},
+        {t:"mc", q:"6級リスニングの形式は？", ch:["複数の会話で自然なやりとりをえらぶ","長文を書きとる","絵を描く","日本語に訳す"], chJp:true, a:0, ex:"6級は会話を聞いて、自然なやりとりをえらぶ。"}
+      ],
+      practice:[
+        {t:"mc", en:"A: (   ) is it? B: It's three o'clock.", q:"(   ) に入る語は？", ch:["What time","How many","What color","How old"], a:0, ex:"時刻をたずねる What time is it?。"},
+        {t:"mc", en:"There (   ) two dogs in the park.", q:"(   ) に入る語は？", ch:["are","is","am","be"], a:0, ex:"two dogs（複数）→ There are。"}
+      ]
+    },
+
+    /* ---------------- 5級 ---------------- */
+    "5":{
+      vocab:[
+        {t:"mc", q:"「いそがしい」は？", ch:["busy","happy","hungry","sleepy"], a:0, ex:"busy＝いそがしい。"},
+        {t:"fill", q:"「毎日」　every (   )", a:"day", ex:"every day＝毎日。"}
+      ],
+      grammar:[
+        {t:"mc", en:"He (   ) not like natto.", q:"(   ) に入る語は？", ch:["does","do","is","are"], a:0, ex:"主語 He の一般動詞の否定文は does not。"},
+        {t:"mc", en:"I (   ) reading a book now.", q:"(   ) に入る語は？", ch:["am","is","are","do"], a:0, ex:"now（今）＋〜ing → 現在進行形。主語 I は am。"},
+        {t:"mc", en:"(   ) the door, please.", q:"(   ) に入る語は？", ch:["Open","Opens","Opening","Opened"], a:0, ex:"命令文は動詞の原形で始める。"}
+      ],
+      technique:[
+        {t:"mc", en:"I (   ) up at six every morning.", q:"【5級・大問1】(   ) に合う語は？", ch:["get","take","look","go"], a:0, ex:"get up＝起きる。熟語はかたまりで覚える。"},
+        {t:"mc", en:"A: Thank you.", q:"【5級・大問2】会話に合う応答は？", ch:["You're welcome.","Here you are.","Me, too.","See you."], a:0, ex:"おれいには You're welcome.（どういたしまして）。"}
+      ],
+      practice:[
+        {t:"mc", en:"My birthday is (   ) May.", q:"(   ) に入る語は？", ch:["in","on","at","to"], a:0, ex:"月の前は in。in May＝5月に。"},
+        {t:"mc", en:"(   ) is that boy? — He is my brother.", q:"(   ) に入る語は？", ch:["Who","What","Where","When"], a:0, ex:"人をたずねる Who。"}
+      ]
+    },
+
+    /* ---------------- 4級 ---------------- */
+    "4":{
+      vocab:[
+        {t:"mc", q:"「〜を理解する」は？", ch:["understand","arrive","invite","collect"], a:0, ex:"understand＝理解する。"},
+        {t:"fill", q:"「将来」を英語で（f で始まる）。", a:"future", ex:"future＝将来。in the future＝将来に。"}
+      ],
+      grammar:[
+        {t:"mc", en:"I (   ) to Kyoto last week.", q:"(   ) に入る語は？", ch:["went","go","goes","will go"], a:0, ex:"last week（先週）→ 過去形 went。"},
+        {t:"mc", en:"This book is (   ) than that one.", q:"(   ) に入る語は？", ch:["more interesting","interesting","interestinger","most interesting"], a:0, ex:"長い形容詞の比較は more ～ than。"},
+        {t:"mc", en:"He was (   ) TV when I came home.", q:"(   ) に入る語は？", ch:["watching","watch","watches","watched"], a:0, ex:"was ＋〜ing → 過去進行形。"}
+      ],
+      technique:[
+        {t:"mc", en:"You must (   ) your homework before dinner.", q:"【4級・大問1】(   ) に合う語は？", ch:["finish","finishes","finishing","finished"], a:0, ex:"must のうしろは動詞の原形。"},
+        {t:"mc", q:"【4級長文】設問を解くコツは？", ch:["先に設問を読んでから本文を探す","本文を全部暗記する","選択肢だけ見る","最後だけ読む"], chJp:true, a:0, ex:"何を聞かれているか先に知ってから本文を読む。"}
+      ],
+      practice:[
+        {t:"mc", en:"I have (   ) been to Australia.", q:"(   ) に入る語は？", ch:["never","ever","yet","still"], a:0, ex:"have never been＝一度も行ったことがない。"},
+        {t:"mc", en:"A: How long (   ) you study? B: For two hours.", q:"(   ) に入る語は？", ch:["did","are","do","were"], a:0, ex:"For two hours（過去の時間）→ did you study。"}
+      ]
+    },
+
+    /* ---------------- 3級（教材から豊富に収録） ---------------- */
+    "3":{
+      vocab:[
+        {t:"fill", en:"I want to (   ) camping with my friends.", q:"ワードバンク [enjoy / vacation / grow] から1語。", a:"enjoy", ex:"enjoy ～ing で「〜を楽しむ」。enjoy camping＝キャンプを楽しむ。"},
+        {t:"fill", en:"We went to Okinawa during summer (   ).", q:"ワードバンクから1語。", a:"vacation", ex:"summer vacation＝夏休み。"},
+        {t:"fill", en:"I have to take (   ) of my brother.", q:"(   ) に入る1語。", a:"care", ex:"take care of ～＝「〜の世話をする」。熟語はかたまりで。"},
+        {t:"fill", en:"She is (   ) in reading books.", q:"(   ) に入る1語。", a:"interested", ex:"be interested in ～＝「〜に興味がある」。"},
+        {t:"fill", en:"It depends (   ) the weather.", q:"(   ) に入る1語。", a:"on", ex:"depend on ～＝「〜による・〜しだい」。"},
+        {t:"fill", en:"We look forward (   ) the summer festival.", q:"(   ) に入る1語。", a:"to", ex:"look forward to ～＝「〜を楽しみに待つ」。"},
+        {t:"fill", q:"「将来」を英語で（f で始まる）。", a:"future", ex:"future＝将来。"},
+        {t:"fill", q:"「〜を紹介する」を英語で（i で始まる）。", a:"introduce", ex:"introduce＝紹介する。"},
+        {t:"mc", en:"A: This cake is really (   ). B: Thanks! I made it.", q:"場面に合う語は？", ch:["delicious","difficult","dangerous","boring"], a:0, ex:"ケーキをほめ、Thanks!と返す場面 → delicious（おいしい）。語彙問題は『場面と気持ち』を想像。"}
+      ],
+      grammar:[
+        {t:"mc", en:"My sister (   ) to the library every Saturday.", q:"(   ) に入る語は？", ch:["goes","go","went","going"], a:0, ex:"主語は三人称・単数、every Saturday は習慣 → 三単現の goes。"},
+        {t:"mc", en:"I (   ) to Tokyo last week.", q:"(   ) に入る語は？", ch:["went","go","goes","will go"], a:0, ex:"last ～（先週）→ 過去形 went。"},
+        {t:"mc", en:"He doesn't (   ) breakfast.", q:"(   ) に入る語は？", ch:["eat","eats","ate","eating"], a:0, ex:"doesn't のうしろは必ず原形。eat が正解。"},
+        {t:"mc", en:"There (   ) two books on the desk.", q:"(   ) に入る語は？", ch:["are","is","am","be"], a:0, ex:"two books（複数）→ There are。"},
+        {t:"mc", en:"She has (   ) here since 2010.", q:"(   ) に入る語は？", ch:["lived","live","lives","living"], a:0, ex:"has ＋過去分詞 → 現在完了。since（〜から）が目印。"},
+        {t:"mc", en:"Tomorrow I (   ) visit my grandmother.", q:"(   ) に入る語は？", ch:["will","am","did","was"], a:0, ex:"tomorrow（未来）→ will＋原形。"}
+      ],
+      technique:[
+        {t:"mc", en:"A: It's a beautiful day. Why don't we go to the park? B: (   )", q:"【大問2】会話に合う応答は？", ch:["That sounds great.","You're welcome.","It was fun.","I'm full."], a:0, ex:"Why don't we ～?（〜しない？）は提案。賛成の That sounds great. が自然。"},
+        {t:"mc", en:"A: Excuse me. I'm looking for the station. B: (   ) Go straight and turn right.", q:"【大問2】会話に合う応答は？", ch:["Sure.","No, thank you.","Here you are.","That's too bad."], a:0, ex:"道案内が続く前のひとこと → Sure.。(   )のうしろの文もヒント。"},
+        {t:"mc", q:"【大問1】文中に every や always があったら、動詞の形は？", ch:["現在形（三単現に注意）","過去形","未来形","命令形"], chJp:true, a:0, ex:"時間ことばで時制を見ぬく。every/always → 現在形。"},
+        {t:"mc", q:"【大問3 長文】読むとき、まず最初にすると良いことは？", ch:["タイトルと設問を先に読む","本文を全部暗記する","最後の文から読む","選択肢だけ読む"], chJp:true, a:0, ex:"タイトル→設問→本文の順。何を聞かれるか頭に入れてから読む。"},
+        {t:"mc", q:"【大問5 英作文】意見英作文で点が高い書き方は？", ch:["I think ＋ 理由を2つ","理由なしで長く書く","日本語をまぜる","質問を書き写す"], chJp:true, a:0, ex:"I think＋理由2つで◎。テンプレを覚えると安定する。"}
+      ],
+      practice:[
+        {t:"mc", en:"A: Could you tell me the way to the station?", q:"応答として最も適切なものは？", ch:["Sure. Go straight and turn left.","Yes, I did.","No, thank you.","I'm fine."], a:0, ex:"道をたずねられたので、案内する Sure. ～ が正解。"},
+        {t:"mc", en:"A: How about going to the movies this weekend?", q:"応答として最も適切なものは？", ch:["That sounds great.","It was fun.","You're welcome.","Here you are."], a:0, ex:"How about ～?（提案）には賛成の That sounds great.。"},
+        {t:"mc", en:"A: I'm afraid I can't come to the party.", q:"応答として最も適切なものは？", ch:["That's too bad.","Congratulations!","Nice to meet you.","You're welcome."], a:0, ex:"残念な知らせ → That's too bad.（それは残念）。"},
+        {t:"mc", en:"A: Thank you for helping me with my homework.", q:"応答として最も適切なものは？", ch:["No problem.","I don't think so.","I'll take it.","That's too bad."], a:0, ex:"おれいには No problem.（どういたしまして）。"},
+        {t:"mc", q:"会話: A: Did you enjoy your vacation in Okinawa? B: Yes! I went swimming every day. 質問: What did B do?", ch:["B went swimming.","B played soccer.","B studied math.","B watched TV."], a:0, ex:"B の発言 I went swimming every day から swimming。"},
+        {t:"mc", q:"英文: Kenji practices French every day because he wants to travel to France. 質問: Why does Kenji practice French?", ch:["To travel to France.","To meet a friend.","To pass a test.","To watch movies."], a:0, ex:"because のあとが理由。travel to France が答え。"}
+      ]
+    },
+
+    /* ---------------- 2級 ---------------- */
+    "2":{
+      vocab:[
+        {t:"mc", en:"The new law will (   ) the environment.", q:"(   ) に入る語は？", ch:["protect","invite","arrive","collect"], a:0, ex:"protect＝守る。protect the environment＝環境を守る。"},
+        {t:"fill", q:"「環境」を英語で（e で始まる）。", a:"environment", ex:"environment＝環境。"},
+        {t:"mc", en:"Reading books can (   ) your vocabulary.", q:"(   ) に入る語は？", ch:["improve","reduce","arrive","belong"], a:0, ex:"improve＝向上させる。"}
+      ],
+      grammar:[
+        {t:"mc", en:"If it (   ) tomorrow, we will stay home.", q:"(   ) に入る語は？", ch:["rains","will rain","rained","raining"], a:0, ex:"条件のif節は未来でも現在形。rains。"},
+        {t:"mc", en:"I wish I (   ) speak French.", q:"(   ) に入る語は？", ch:["could","can","will","am"], a:0, ex:"I wish ＋仮定法 → could（〜できたらなあ）。"},
+        {t:"mc", en:"The book (   ) by many students is famous.", q:"(   ) に入る語は？", ch:["read","reads","reading","to read"], a:0, ex:"名詞を後ろから説明する過去分詞。read（読まれる本）。"}
+      ],
+      technique:[
+        {t:"mc", q:"【2級・大問1】語彙問題で知らない単語が出たら？", ch:["前後の文脈から意味を推測する","あてずっぽうで①を選ぶ","とばして0点にする","日本語で書く"], chJp:true, a:0, ex:"2級は語彙が増える。文脈推測の力がカギ。"},
+        {t:"mc", q:"【2級長文】設問の順番と本文の順番の関係は？", ch:["だいたい本文の流れと同じ順で出る","完全にバラバラ","必ず逆順","関係ない"], chJp:true, a:0, ex:"設問は本文の流れに沿うことが多い。順に探す。"}
+      ],
+      practice:[
+        {t:"mc", en:"Many people believe that exercise (   ) good for health.", q:"(   ) に入る語は？", ch:["is","are","be","being"], a:0, ex:"主語 exercise（不可算・単数あつかい）→ is。"},
+        {t:"mc", en:"(   ) the heavy rain, the game was canceled.", q:"(   ) に入る語は？", ch:["Because of","Because","So","But"], a:0, ex:"あとが名詞のかたまり → Because of（〜のために）。"}
+      ]
+    }
+  };
+
+  /* ============================ 採点ユーティリティ ============================ */
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function enHTML(s){return esc(s).replace(/Y/g,'<span class="y">Y</span>');}
+  function normSpell(x){return (x||"").toLowerCase().replace(/[’']/g,"").replace(/[^a-z]+/g," ").trim().replace(/\s+/g," ");}
+  function normExact(x){return (x||"").trim().replace(/[\/／　]+/g," ").replace(/\s+/g," ");}
+  // fill判定: "ok"(完全一致) / "warn"(綴りはOKだが記号・大文字ずれ) / "ng" / null(空)
+  function judgeFill(u,q){
+    var alts=q.ac?[q.a].concat(q.ac):[q.a];
+    var ue=normExact(u), us=normSpell(u);
+    if(us==="")return null;
+    var spell=false;
+    for(var i=0;i<alts.length;i++){
+      if(normExact(alts[i]).toLowerCase()===ue.toLowerCase())return "ok";
+      if(normSpell(alts[i])===us)spell=true;
+    }
+    return spell?"warn":"ng";
+  }
+
+  /* ============================ 成績の記録（端末保存） ============================ */
+  var STATS_KEY="mado_loop_stats_v1", GRADE_KEY="mado_loop_grade_v1";
+  function loadStats(){try{return JSON.parse(localStorage.getItem(STATS_KEY))||{};}catch(e){return {};}}
+  function saveStats(s){try{localStorage.setItem(STATS_KEY,JSON.stringify(s));}catch(e){}}
+  function record(grade,genre,ok){
+    var s=loadStats();
+    s[grade]=s[grade]||{}; s[grade][genre]=s[grade][genre]||{n:0,ok:0};
+    s[grade][genre].n++; if(ok)s[grade][genre].ok++; saveStats(s);
+  }
+  function acc(grade,genre){
+    var s=loadStats(), g=s[grade]&&s[grade][genre];
+    if(!g||!g.n)return null;
+    return {pct:Math.round(g.ok/g.n*100), n:g.n, ok:g.ok};
+  }
+  function loadGrade(){try{return localStorage.getItem(GRADE_KEY)||"3";}catch(e){return "3";}}
+  function saveGrade(g){try{localStorage.setItem(GRADE_KEY,g);}catch(e){}}
+
+  function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+  /* ============================ アプリ状態 ============================ */
+  var S={ grade:loadGrade(), screen:"home", genre:"vocab",
+          q:null, picked:-1, answered:false,
+          recent:{},               // ジャンルごとの直近出題index（連続同問対策）
+          test:{mode:null, queue:[], idx:0, ok:0} };
+  var app=document.getElementById("app");
+  function $(id){return document.getElementById(id);}
+
+  function setLoop(active){
+    var steps=document.querySelectorAll("#loop .step");
+    for(var i=0;i<steps.length;i++){
+      steps[i].classList.toggle("on", steps[i].getAttribute("data-st")===active);
+    }
+  }
+
+  /* ============================ ホーム ============================ */
+  function renderHome(){
+    setLoop("home");
+    var gm=gradeMeta(S.grade);
+    var gradeChips=GRADES.map(function(g){
+      return '<button class="gchip'+(g.id===S.grade?' on':'')+'" data-g="'+g.id+'">'+
+             '<div class="gn">'+g.name+(g.isNew?' <span class="hint" style="font-size:10px;color:var(--gold)">NEW</span>':'')+'</div>'+
+             '<div class="gs">'+esc(g.sub)+'</div></button>';
+    }).join("");
+
+    var html=''+
+    '<div class="card">'+
+      '<div class="muted" style="font-size:14px;margin-bottom:8px;">① 級をえらぶ</div>'+
+      '<div class="grades">'+gradeChips+'</div>'+
+    '</div>'+
+    '<div class="card">'+
+      '<div style="font-size:15px;font-weight:700;margin-bottom:4px;">いまの級：<span style="color:var(--blue)">'+esc(gm.name)+'</span></div>'+
+      '<div class="hint" style="margin-bottom:12px;">ジャンルごとに訓練 → 判定テスト、をくり返して合格をめざそう。</div>'+
+      '<button class="act big" id="goTrain">🏋️ ジャンルごとに訓練する</button>'+
+      '<div style="height:10px"></div>'+
+      '<button class="act sec big" id="goTest">📋 '+esc(gm.name)+' 判定テストを受ける</button>'+
+    '</div>'+
+    '<div class="card">'+
+      '<div class="muted" style="font-size:14px;margin-bottom:10px;">'+esc(gm.name)+' のジャンル別 正答率</div>'+
+      '<div class="genres">'+GENRES.map(function(ge){
+          var a=acc(S.grade,ge.id);
+          var accTxt=a? '正答率 '+a.pct+'%（'+a.ok+'/'+a.n+'）' : 'まだ記録なし';
+          return '<div class="gtile" data-train="'+ge.id+'">'+
+                 '<div class="gi">'+ge.icon+'</div>'+
+                 '<div class="gl">'+ge.name+'</div>'+
+                 '<div class="gd">'+esc(ge.desc)+'</div>'+
+                 '<div class="acc'+(a?'':' none')+'">'+accTxt+'</div></div>';
+        }).join("")+'</div>'+
+    '</div>';
+    app.innerHTML=html;
+
+    var chips=document.querySelectorAll(".gchip");
+    for(var i=0;i<chips.length;i++)chips[i].addEventListener("click",function(){
+      S.grade=this.getAttribute("data-g"); saveGrade(S.grade); renderHome();
+    });
+    $("goTrain").addEventListener("click",function(){S.genre="vocab";go("train");});
+    $("goTest").addEventListener("click",function(){go("testsetup");});
+    var tiles=document.querySelectorAll(".gtile");
+    for(var k=0;k<tiles.length;k++)tiles[k].addEventListener("click",function(){
+      S.genre=this.getAttribute("data-train"); go("train");
+    });
+  }
+
+  /* ============================ 訓練 ============================ */
+  function pickQuestion(){
+    var pool=(BANK[S.grade]&&BANK[S.grade][S.genre])||[];
+    if(!pool.length){S.q=null;return;}
+    var last=S.recent[S.grade+"/"+S.genre];
+    var idx=Math.floor(Math.random()*pool.length);
+    if(pool.length>1 && idx===last){idx=(idx+1)%pool.length;}
+    S.recent[S.grade+"/"+S.genre]=idx;
+    S.q=pool[idx]; S.picked=-1; S.answered=false;
+  }
+
+  function renderTrain(){
+    setLoop("train");
+    var gm=gradeMeta(S.grade);
+    if(!S.q)pickQuestion();
+
+    var tabs=GENRES.map(function(ge){
+      return '<button class="pill'+(ge.id===S.genre?' on':'')+'" data-genre="'+ge.id+'">'+ge.icon+' '+ge.name+'</button>';
+    }).join("");
+    var a=acc(S.grade,S.genre);
+    var statTxt=a? '正答率 <b>'+a.pct+'%</b>（'+a.ok+'/'+a.n+'）' : 'まだ記録なし';
+
+    var body;
+    if(!S.q){
+      body='<div class="muted" style="padding:20px 0;">このジャンルの問題はまだ準備中です（フェーズ③で追加）。</div>';
+    }else{
+      body=''+
+        '<div class="tech">'+genreMeta(S.genre).icon+' '+esc(genreMeta(S.genre).desc)+'</div>'+
+        '<div class="q">'+esc(S.q.q||"")+'</div>'+
+        (S.q.en?'<div class="sent">'+enHTML(S.q.en)+'</div>':'')+
+        renderInput(S.q)+
+        '<div id="fb"></div>'+
+        '<div class="actions" id="tactions"></div>';
+    }
+
+    app.innerHTML=''+
+    '<div class="card">'+
+      '<div class="tbar">'+tabs+'<span class="stat">'+statTxt+'</span></div>'+
+      '<div class="hint" style="margin-bottom:12px;">'+esc(gm.name)+'｜ランダムに例題が出ます。答えると採点・解説します。</div>'+
+      body+
+    '</div>'+
+    '<div class="actions">'+
+      '<button class="act ghost" id="backHome">← ホーム</button>'+
+      '<button class="act sec" id="toTest">📋 判定テストへ進む →</button>'+
+    '</div>';
+
+    // ジャンルタブ
+    var pills=document.querySelectorAll(".pill[data-genre]");
+    for(var i=0;i<pills.length;i++)pills[i].addEventListener("click",function(){
+      S.genre=this.getAttribute("data-genre"); S.q=null; renderTrain();
+    });
+    $("backHome").addEventListener("click",function(){go("home");});
+    $("toTest").addEventListener("click",function(){go("testsetup");});
+
+    if(S.q)bindQuestion(S.q,/*isTest*/false);
+  }
+
+  // 入力UI（mc=選択肢ボタン / fill=テキスト）
+  function renderInput(q){
+    if(q.t==="fill"){
+      return '<div class="row"><span class="lbl">答え：</span>'+
+             '<input id="ans" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="答えを英語で入力"></div>'+
+             '<div class="sub">英語で入力 → Enterまたは「判定」</div>';
+    }
+    var enCls=q.chJp?'':' en';
+    return '<div class="choices">'+q.ch.map(function(c,i){
+      return '<button class="ch'+enCls+'" data-i="'+i+'"><span class="mk">'+(i+1)+'</span><span class="txt">'+(q.chJp?esc(c):enHTML(c))+'</span></button>';
+    }).join("")+'</div>';
+  }
+
+  // 出題の採点ロジック（訓練・テスト共通の判定部分）
+  function bindQuestion(q,isTest){
+    var onResult = isTest ? testAnswered : trainAnswered;
+    if(q.t==="fill"){
+      var doCheck=function(){
+        if(S.answered)return;
+        var r=judgeFill($("ans").value,q);
+        if(r===null)return;
+        S.answered=true;
+        $("ans").disabled=true;
+        var ok=(r==="ok");
+        onResult(ok, r, '正答：<span class="en">'+enHTML(q.a)+'</span>');
+      };
+      $("ans").focus();
+      $("ans").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doCheck();}});
+      // 判定ボタンは actions 側に置く
+      buildActions(isTest, doCheck);
+    }else{
+      var chs=document.querySelectorAll(".ch[data-i]");
+      for(var i=0;i<chs.length;i++)chs[i].addEventListener("click",function(){
+        if(S.answered)return;
+        var pick=parseInt(this.getAttribute("data-i"),10);
+        S.answered=true; S.picked=pick;
+        var ok=(pick===q.a);
+        // 視覚マーク
+        var all=document.querySelectorAll(".ch[data-i]");
+        for(var k=0;k<all.length;k++){
+          var ki=parseInt(all[k].getAttribute("data-i"),10);
+          if(ki===q.a)all[k].classList.add("right");
+          else if(ki===pick)all[k].classList.add("wrong");
+          else all[k].classList.add("dim");
+        }
+        onResult(ok, ok?"ok":"ng", '正答：<span class="'+(q.chJp?'':'en')+'">'+(q.chJp?esc(q.ch[q.a]):enHTML(q.ch[q.a]))+'</span>');
+      });
+      buildActions(isTest, null);
+    }
+  }
+
+  function buildActions(isTest, fillCheck){
+    var wrap=$("tactions"); if(!wrap)return;
+    if(S.q.t==="fill" && !S.answered){
+      var b=document.createElement("button"); b.className="act"; b.textContent="判定";
+      b.addEventListener("click",fillCheck); wrap.appendChild(b);
+    }
+  }
+
+  // 訓練：採点後の表示
+  function trainAnswered(ok, kind, ansHTML){
+    record(S.grade,S.genre,ok);
+    var v = kind==="ok" ? '<div class="verdict ok">○　正解！</div>'
+          : kind==="warn" ? '<div class="verdict warn">△　つづりはOK！大文字・記号を直そう</div>'
+          : '<div class="verdict ng">✕　ちがうよ</div>';
+    var exp=S.q.ex?'<div class="exp">'+enHTML(S.q.ex)+'</div>':'';
+    $("fb").innerHTML=v+'<div class="ansrow">'+ansHTML+'</div>'+exp;
+    var wrap=$("tactions"); wrap.innerHTML='';
+    var nx=document.createElement("button"); nx.className="act"; nx.textContent="次の問題 →";
+    nx.addEventListener("click",function(){S.q=null;pickQuestion();renderTrain();});
+    wrap.appendChild(nx);
+    // 上部の正答率も更新
+    var a=acc(S.grade,S.genre);
+    var st=document.querySelector(".stat");
+    if(st&&a)st.innerHTML='正答率 <b>'+a.pct+'%</b>（'+a.ok+'/'+a.n+'）';
+  }
+
+  /* ============================ 判定テスト ============================ */
+  var PASS=0.65, QUICK_N=8;
+  function gradePool(grade){
+    var arr=[];
+    GENRES.forEach(function(ge){
+      var qs=(BANK[grade]&&BANK[grade][ge.id])||[];
+      qs.forEach(function(q){arr.push(q);});
+    });
+    return arr;
+  }
+
+  function renderTestSetup(){
+    setLoop("test");
+    var gm=gradeMeta(S.grade), pool=gradePool(S.grade);
+    var quick=Math.min(QUICK_N,pool.length);
+    app.innerHTML=''+
+    '<div class="card center">'+
+      '<div style="font-size:17px;font-weight:700;color:var(--blue);margin-bottom:6px;">📋 '+esc(gm.name)+' 判定テスト</div>'+
+      '<div class="hint" style="margin-bottom:16px;">英検の判定基準にならい、<b>正答率65%以上で合格</b>。モードをえらんでね。</div>'+
+      '<button class="act big" id="mFull">フルモード（全'+pool.length+'問）</button>'+
+      '<div class="hint" style="margin:6px 0 14px;">本番に近い問題数。じっくり実力を判定。</div>'+
+      '<button class="act sec big" id="mQuick">クイックモード（'+quick+'問）</button>'+
+      '<div class="hint" style="margin-top:6px;">少しずつ出題。短時間でサッと判定。</div>'+
+    '</div>'+
+    '<div class="actions"><button class="act ghost" id="backHome2">← ホーム</button></div>';
+    $("mFull").addEventListener("click",function(){startTest("full");});
+    $("mQuick").addEventListener("click",function(){startTest("quick");});
+    $("backHome2").addEventListener("click",function(){go("home");});
+  }
+
+  function startTest(mode){
+    var pool=shuffle(gradePool(S.grade).slice());
+    if(mode==="quick")pool=pool.slice(0,Math.min(QUICK_N,pool.length));
+    S.test={mode:mode, queue:pool, idx:0, ok:0};
+    go("test");
+  }
+
+  function renderTest(){
+    setLoop("test");
+    var t=S.test;
+    if(t.idx>=t.queue.length){return renderTestResult();}
+    S.q=t.queue[t.idx]; S.answered=false; S.picked=-1;
+    var gm=gradeMeta(S.grade);
+    app.innerHTML=''+
+    '<div class="card">'+
+      '<div class="prog">'+esc(gm.name)+' 判定テスト（'+(t.mode==="quick"?"クイック":"フル")+'）　'+(t.idx+1)+' / '+t.queue.length+'</div>'+
+      '<div class="ratebar"><i style="width:'+Math.round(t.idx/t.queue.length*100)+'%"></i></div>'+
+      '<div class="q" style="margin-top:10px;">'+esc(S.q.q||"")+'</div>'+
+      (S.q.en?'<div class="sent">'+enHTML(S.q.en)+'</div>':'')+
+      renderInput(S.q)+
+      '<div id="fb"></div>'+
+      '<div class="actions" id="tactions"></div>'+
+    '</div>';
+    bindQuestion(S.q,/*isTest*/true);
+  }
+
+  // テスト：採点後（解説は出すが正答率には加算＝学習も兼ねる）
+  function testAnswered(ok, kind, ansHTML){
+    if(ok)S.test.ok++;
+    record(S.grade, currentGenreOf(S.q), ok); // ジャンル別正答率にも反映
+    var v = kind==="ok" ? '<div class="verdict ok">○　正解！</div>'
+          : kind==="warn" ? '<div class="verdict warn">△　惜しい（綴りはOK・記号ミス）</div>'
+          : '<div class="verdict ng">✕　ちがうよ</div>';
+    var exp=S.q.ex?'<div class="exp">'+enHTML(S.q.ex)+'</div>':'';
+    $("fb").innerHTML=v+'<div class="ansrow">'+ansHTML+'</div>'+exp;
+    var wrap=$("tactions"); wrap.innerHTML='';
+    var last=(S.test.idx>=S.test.queue.length-1);
+    var nx=document.createElement("button"); nx.className="act"; nx.textContent=last?"結果を見る →":"次へ →";
+    nx.addEventListener("click",function(){S.test.idx++;go("test");});
+    wrap.appendChild(nx);
+  }
+  // テスト用：問題がどのジャンル由来か（正答率記録のため）
+  function currentGenreOf(q){
+    var b=BANK[S.grade];
+    for(var k=0;k<GENRES.length;k++){
+      var arr=b[GENRES[k].id]||[];
+      if(arr.indexOf(q)>=0)return GENRES[k].id;
+    }
+    return "practice";
+  }
+
+  function renderTestResult(){
+    setLoop("test");
+    var t=S.test, gm=gradeMeta(S.grade);
+    var total=t.queue.length, pct=total?Math.round(t.ok/total*100):0;
+    var pass=(t.ok/total)>=PASS;
+    app.innerHTML=''+
+    '<div class="card center">'+
+      '<div style="font-size:17px;font-weight:700;color:var(--blue);margin-bottom:4px;">'+esc(gm.name)+' 判定テスト 結果</div>'+
+      '<div class="score-big">'+t.ok+' <span class="tot">/ '+total+'</span></div>'+
+      '<div class="ratebar"><i style="width:'+pct+'%;background:'+(pass?'var(--ok)':'var(--ng)')+'"></i></div>'+
+      '<div style="font-size:15px;margin:6px 0;">正答率 <b>'+pct+'%</b></div>'+
+      '<div class="passmark '+(pass?'pass':'fail')+'">'+(pass?'合格ライン突破！🎉':'もう少し… 不合格')+'</div>'+
+      '<div class="threshold">合格基準：正答率65%以上（'+Math.ceil(total*PASS)+'問以上の正解で合格）</div>'+
+      '<div class="actions" style="justify-content:center;margin-top:16px;">'+
+        '<button class="act" id="rTrain">🏋️ 訓練にもどる</button>'+
+        '<button class="act sec" id="rRetry">📋 もう一度テスト</button>'+
+        '<button class="act ghost" id="rHome">🏠 ホーム</button>'+
+      '</div>'+
+      '<div class="hint" style="margin-top:12px;">'+(pass
+        ? '次の級にチャレンジしてみよう！（ホームで級を変更）'
+        : 'まちがえたジャンルを訓練して、もう一度ループを回そう。')+'</div>'+
+    '</div>';
+    $("rTrain").addEventListener("click",function(){S.q=null;go("train");});
+    $("rRetry").addEventListener("click",function(){go("testsetup");});
+    $("rHome").addEventListener("click",function(){go("home");});
+  }
+
+  /* ============================ ルーター ============================ */
+  function go(screen){
+    S.screen=screen;
+    if(screen==="home")renderHome();
+    else if(screen==="train")renderTrain();
+    else if(screen==="testsetup")renderTestSetup();
+    else if(screen==="test")renderTest();
+    else if(screen==="testresult")renderTestResult();
+  }
+
+  document.getElementById("ver").textContent=APP_VER;
+  go("home");
+})();
+</script>
+</body>
+</html>
