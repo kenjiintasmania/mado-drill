@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.16 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.17 | 2026-06-18 JST -->
+<!--   v0.16→v0.17：4級・準2級の長文を増量しバランス調整。長文読解 5:9 4:13 3:17 準2:14 準2+:10 2:10。パッセージ16本・総計478問。 -->
 <!--   v0.15→v0.16：長文をさらに追加。5級(Emmaの学校)・2級(食品ロス)・準2+(睡眠と健康)。パッセージ計12本・総計459問。 -->
 <!--   方針：判定テストは全ジャンル公平に出題（苦手重点モードは採用しない）。 -->
 <!--   v0.14→v0.15：長文をさらに追加。5級(Kenの一日)・2級(AI)・準2+(プラスチック問題)に長文読解を新設。パッセージ計9本・総計444問。 -->
@@ -282,7 +283,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.16";
+  var APP_VER = "v0.17";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1044,6 +1045,24 @@
       "Many young people today do not get enough sleep. They often stay up late to study or to use their smartphones. However, sleep is very important for both the body and the mind.",
       "During sleep, the body repairs itself and the brain organizes the things we learned during the day. Studies show that students who sleep well remember information better and feel less stressed. On the other hand, a lack of sleep can lead to poor concentration and even health problems.",
       "Experts recommend several habits for better sleep. We should go to bed at the same time every night and avoid bright screens before sleeping. A short walk or light reading can also help. By taking sleep seriously, we can improve both our health and our study results."
+    ]},
+    email_lisa:{ title:"メール：Lisa から Mika へ", paras:[
+      "From: Lisa — Hi Mika! Are you free this Saturday? I want to go to the new aquarium near the station. It opens at 10 a.m. We can see dolphins and big sharks. Let's meet at the station at nine thirty.",
+      "From: Mika — Hi Lisa! That sounds fun. I love dolphins! But I have piano lessons until ten on Saturday. Can we meet at eleven instead? After the aquarium, let's have lunch together."
+    ]},
+    ken_trip:{ title:"Ken の家族旅行", paras:[
+      "Last spring, Ken went to Hokkaido with his family. It was his first time to travel by plane. He was a little nervous, but the flight was fun.",
+      "In Hokkaido, they visited a big farm. Ken saw many cows and sheep. He also ate fresh ice cream. It was very delicious.",
+      "On the last day, it started to snow. Ken was surprised because it was spring. He made a small snowman with his sister. Ken wants to visit Hokkaido again."
+    ]},
+    cooking_club:{ title:"長文：新しいクラブ活動", paras:[
+      "Our high school started a new club this year: the cooking club. At first, only a few students joined, but now it has more than thirty members. Every week, the students cook dishes from different countries.",
+      "The club has become popular for several reasons. Students can learn useful skills, and they enjoy eating what they make. The teacher says that cooking together also helps students make new friends.",
+      "Last month, the club held a small event. They sold cookies and cakes at the school festival. The money they earned will be used to buy new cooking tools. The members are already planning their next event."
+    ]},
+    library_email:{ title:"メール：図書館からのお知らせ", paras:[
+      "From: City Library — Dear members, our library will be closed from August 1 to August 5 for cleaning. During this time, you cannot borrow or return books. If you have books due during this period, please return them by July 31.",
+      "From: City Library — After we reopen on August 6, we will have a new study room on the second floor. Students can use it for free, but they need to make a reservation online. We hope you will enjoy our new space."
     ]}
   };
   // 3級「長文読解」ジャンル（答えはすべて本文中にある抜き出し型）
@@ -1075,12 +1094,35 @@
     {t:"mc", p:"max", q:"質問: What does Tom do every morning?", ch:["He walks Max in the park.","He swims in the river.","He plays soccer.","He reads books."], a:0, ex:"第2段落 Tom walks Max in the park。"},
     {t:"mc", p:"max", q:"質問: What does Max love to do at the river?", ch:["Swimming.","Sleeping.","Eating.","Reading."], a:0, ex:"第3段落 Max loves swimming。"}
   ];
+  BANK["4"].reading = BANK["4"].reading.concat([
+    {t:"mc", p:"email_lisa", q:"質問: Where does Lisa want to go?", ch:["To the new aquarium.","To the zoo.","To the library.","To the park."], a:0, ex:"Lisaのメール the new aquarium。"},
+    {t:"mc", p:"email_lisa", q:"質問: What time does the aquarium open?", ch:["At 10 a.m.","At 9 a.m.","At 11 a.m.","At noon."], a:0, ex:"It opens at 10 a.m.。"},
+    {t:"mc", p:"email_lisa", q:"質問: Why can't Mika meet at nine thirty?", ch:["She has piano lessons until ten.","She is sick.","She is sleeping.","She has no money."], a:0, ex:"I have piano lessons until ten。"},
+    {t:"mc", p:"email_lisa", q:"質問: What does Mika want to do after the aquarium?", ch:["Have lunch together.","Go home.","Buy a fish.","Play tennis."], a:0, ex:"let's have lunch together。"},
+    {t:"mc", p:"ken_trip", q:"質問: How did Ken travel to Hokkaido?", ch:["By plane.","By train.","By bus.","By car."], a:0, ex:"第1段落 travel by plane。"},
+    {t:"mc", p:"ken_trip", q:"質問: How did Ken feel before the flight?", ch:["A little nervous.","Very angry.","Very sleepy.","Very hungry."], a:0, ex:"第1段落 a little nervous。"},
+    {t:"mc", p:"ken_trip", q:"質問: What did Ken eat at the farm?", ch:["Fresh ice cream.","A hamburger.","Sushi.","Curry."], a:0, ex:"第2段落 ate fresh ice cream。"},
+    {t:"mc", p:"ken_trip", q:"質問: What surprised Ken on the last day?", ch:["It started to snow in spring.","He lost his bag.","He missed the plane.","He met a friend."], a:0, ex:"第3段落 it started to snow ... it was spring。"},
+    {t:"mc", p:"ken_trip", q:"質問: What does Ken want to do?", ch:["Visit Hokkaido again.","Move to Hokkaido.","Buy a farm.","Stop traveling."], a:0, ex:"第3段落 wants to visit Hokkaido again。"}
+  ]);
   BANK["pre2"].reading = [
     {t:"mc", p:"online", q:"質問: What is one good point of online lessons?", ch:["Students can learn at home.","Students must travel far.","Lessons cannot be repeated.","Students cannot use videos."], a:0, ex:"第1段落 learn at home / watch again。"},
     {t:"mc", p:"online", q:"質問: What problem do some students have?", ch:["They find it hard to focus at home.","They have too many friends.","They cannot watch videos.","They travel too much."], a:0, ex:"第2段落 hard to focus at home。"},
     {t:"mc", p:"online", q:"質問: What do teachers say is important?", ch:["Talking with classmates.","Sleeping in class.","Studying alone always.","Skipping lessons."], a:0, ex:"第2段落 talking with classmates is important。"},
     {t:"mc", p:"online", q:"質問: What is the best way according to experts?", ch:["Using both online and classroom lessons.","Only online lessons.","Only classroom lessons.","No lessons at all."], a:0, ex:"第3段落 use both online and classroom lessons。"}
   ];
+  BANK["pre2"].reading = BANK["pre2"].reading.concat([
+    {t:"mc", p:"cooking_club", q:"質問: How many members does the cooking club have now?", ch:["More than thirty.","Only three.","About ten.","Over a hundred."], a:0, ex:"第1段落 more than thirty members。"},
+    {t:"mc", p:"cooking_club", q:"質問: What do the students cook every week?", ch:["Dishes from different countries.","Only rice.","Only desserts.","Nothing."], a:0, ex:"第1段落 dishes from different countries。"},
+    {t:"mc", p:"cooking_club", q:"質問: According to the teacher, what does cooking together help students do?", ch:["Make new friends.","Earn money.","Win contests.","Skip class."], a:0, ex:"第2段落 helps students make new friends。"},
+    {t:"mc", p:"cooking_club", q:"質問: What did the club do at the school festival?", ch:["Sold cookies and cakes.","Sang songs.","Played soccer.","Cleaned the park."], a:0, ex:"第3段落 sold cookies and cakes。"},
+    {t:"mc", p:"cooking_club", q:"質問: How will the earned money be used?", ch:["To buy new cooking tools.","To buy uniforms.","To take a trip.","To pay teachers."], a:0, ex:"第3段落 buy new cooking tools。"},
+    {t:"mc", p:"library_email", q:"質問: Why will the library be closed?", ch:["For cleaning.","For a party.","For a contest.","For a sale."], a:0, ex:"第1段落 closed ... for cleaning。"},
+    {t:"mc", p:"library_email", q:"質問: If your books are due during the closed period, when should you return them?", ch:["By July 31.","By August 5.","By August 6.","Anytime."], a:0, ex:"第1段落 return them by July 31。"},
+    {t:"mc", p:"library_email", q:"質問: When will the library reopen?", ch:["On August 6.","On August 1.","On July 31.","Never."], a:0, ex:"第2段落 reopen on August 6。"},
+    {t:"mc", p:"library_email", q:"質問: What is new after reopening?", ch:["A study room on the second floor.","A swimming pool.","A new café.","A parking lot."], a:0, ex:"第2段落 a new study room on the second floor。"},
+    {t:"mc", p:"library_email", q:"質問: What do students need to do to use the study room?", ch:["Make a reservation online.","Pay a fee.","Bring a teacher.","Wait in line."], a:0, ex:"第2段落 need to make a reservation online。"}
+  ]);
   BANK["5"].reading = [
     {t:"mc", p:"ken_day", q:"質問: How old is Ken?", ch:["Twelve.","Ten.","Six.","Twenty."], a:0, ex:"第1段落 I am twelve years old。"},
     {t:"mc", p:"ken_day", q:"質問: Where does Ken live?", ch:["In Osaka.","In Tokyo.","In Kyoto.","In Nagoya."], a:0, ex:"第1段落 I live in Osaka。"},
