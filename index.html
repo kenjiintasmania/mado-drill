@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.14 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.15 | 2026-06-18 JST -->
+<!--   v0.14→v0.15：長文をさらに追加。5級(Kenの一日)・2級(AI)・準2+(プラスチック問題)に長文読解を新設。パッセージ計9本・総計444問。 -->
 <!--   v0.13→v0.14：長文パッセージを追加（計6本）。3級に内容一致型の作文・Eメール読解、4級・準2級にも長文読解を新設。総計430問。 -->
 <!--   v0.12→v0.13：判定テスト結果に「苦手を鍛える」導線を追加。成績の先生へ送信（GAS連携）を統合。 -->
 <!--   送信先=旧mado_drillと同じGAS_URL。?cls=3A&num=5&name=… と端末記憶で自動入力。 -->
@@ -279,7 +280,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.14";
+  var APP_VER = "v0.15";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -1011,6 +1012,21 @@
       "These days, more students study online. Online lessons have several good points. Students can learn at home, so they do not need to travel to school. They can also watch the lessons again if they do not understand something.",
       "However, online study has some problems, too. Some students find it hard to focus at home. Also, they cannot easily ask questions or talk with friends. Teachers say that talking with classmates is an important part of learning.",
       "Experts say the best way is to use both online and classroom lessons. For example, students can watch a video lesson at home and then discuss it at school. In this way, they can enjoy the good points of both."
+    ]},
+    ken_day:{ title:"Ken の一日", paras:[
+      "My name is Ken. I am twelve years old. I live in Osaka with my family.",
+      "I get up at six thirty every morning. I eat breakfast with my sister. I usually have rice, eggs, and milk.",
+      "I go to school by bike. I like English and music. After school, I play soccer with my friends in the park."
+    ]},
+    ai_tech:{ title:"長文：AIと私たちの生活", paras:[
+      "Artificial intelligence, or AI, is changing the way we live. AI is now used in many areas, such as health care, transportation, and education. For example, some hospitals use AI to find diseases earlier than before.",
+      "AI also brings some concerns. Many people worry that machines will take away their jobs. In addition, AI sometimes makes mistakes because it learns from data that may not be perfect. Therefore, humans still need to check the results carefully.",
+      "Experts believe that AI and humans should work together. AI can do simple tasks quickly, while humans can make decisions that require feelings and creativity. By using the strengths of both, we may create a better future."
+    ]},
+    plastic:{ title:"長文：プラスチックごみの問題", paras:[
+      "Plastic is cheap, light, and useful, so it is used in many products. However, plastic waste has become a serious problem around the world. A lot of plastic ends up in the ocean, where it harms fish and other sea animals.",
+      "To solve this problem, some countries have banned plastic bags. Many shops now ask customers to bring their own bags. Companies are also developing new materials that break down naturally and do not stay in the environment for a long time.",
+      "However, these efforts are not enough by themselves. Each of us can help by reducing the plastic we use and by recycling. Small changes in our daily lives can make a big difference for the planet."
     ]}
   };
   // 3級「長文読解」ジャンル（答えはすべて本文中にある抜き出し型）
@@ -1047,6 +1063,26 @@
     {t:"mc", p:"online", q:"質問: What problem do some students have?", ch:["They find it hard to focus at home.","They have too many friends.","They cannot watch videos.","They travel too much."], a:0, ex:"第2段落 hard to focus at home。"},
     {t:"mc", p:"online", q:"質問: What do teachers say is important?", ch:["Talking with classmates.","Sleeping in class.","Studying alone always.","Skipping lessons."], a:0, ex:"第2段落 talking with classmates is important。"},
     {t:"mc", p:"online", q:"質問: What is the best way according to experts?", ch:["Using both online and classroom lessons.","Only online lessons.","Only classroom lessons.","No lessons at all."], a:0, ex:"第3段落 use both online and classroom lessons。"}
+  ];
+  BANK["5"].reading = [
+    {t:"mc", p:"ken_day", q:"質問: How old is Ken?", ch:["Twelve.","Ten.","Six.","Twenty."], a:0, ex:"第1段落 I am twelve years old。"},
+    {t:"mc", p:"ken_day", q:"質問: Where does Ken live?", ch:["In Osaka.","In Tokyo.","In Kyoto.","In Nagoya."], a:0, ex:"第1段落 I live in Osaka。"},
+    {t:"mc", p:"ken_day", q:"質問: How does Ken go to school?", ch:["By bike.","By bus.","By train.","On foot."], a:0, ex:"第3段落 I go to school by bike。"},
+    {t:"mc", p:"ken_day", q:"質問: What does Ken do after school?", ch:["He plays soccer.","He studies math.","He watches TV.","He sleeps."], a:0, ex:"第3段落 I play soccer with my friends。"}
+  ];
+  BANK["2"].reading = [
+    {t:"mc", p:"ai_tech", q:"質問: How do some hospitals use AI?", ch:["To find diseases earlier.","To clean rooms.","To cook food.","To sell tickets."], a:0, ex:"第1段落 use AI to find diseases earlier。"},
+    {t:"mc", p:"ai_tech", q:"質問: What is one concern about AI?", ch:["It may take away people's jobs.","It is too cheap.","It never makes mistakes.","It cannot learn."], a:0, ex:"第2段落 machines will take away their jobs。"},
+    {t:"mc", p:"ai_tech", q:"質問: Why do humans still need to check AI's results?", ch:["Because AI learns from data that may not be perfect.","Because AI is always right.","Because AI is too slow.","Because AI is expensive."], a:0, ex:"第2段落 learns from data that may not be perfect。"},
+    {t:"mc", p:"ai_tech", q:"質問: What do experts believe?", ch:["AI and humans should work together.","AI should replace all humans.","Humans should stop using AI.","AI should do nothing."], a:0, ex:"第3段落 AI and humans should work together。"},
+    {t:"mc", p:"ai_tech", q:"質問: What can humans do better than AI?", ch:["Make decisions that require feelings and creativity.","Do simple tasks quickly.","Store huge data.","Work without rest."], a:0, ex:"第3段落 humans can make decisions that require feelings and creativity。"}
+  ];
+  BANK["pre2plus"].reading = [
+    {t:"mc", p:"plastic", q:"質問: Why is plastic used in many products?", ch:["Because it is cheap, light, and useful.","Because it is heavy.","Because it is rare.","Because it is alive."], a:0, ex:"第1段落 cheap, light, and useful。"},
+    {t:"mc", p:"plastic", q:"質問: What happens to a lot of plastic waste?", ch:["It ends up in the ocean and harms sea animals.","It disappears at once.","It becomes food.","It turns into gold."], a:0, ex:"第1段落 ends up in the ocean, where it harms sea animals。"},
+    {t:"mc", p:"plastic", q:"質問: What have some countries done?", ch:["They have banned plastic bags.","They have banned books.","They have closed shops.","They have stopped recycling."], a:0, ex:"第2段落 some countries have banned plastic bags。"},
+    {t:"mc", p:"plastic", q:"質問: What are companies developing?", ch:["New materials that break down naturally.","Bigger plastic bags.","Faster cars.","New phones."], a:0, ex:"第2段落 new materials that break down naturally。"},
+    {t:"mc", p:"plastic", q:"質問: What can each of us do?", ch:["Reduce plastic use and recycle.","Use more plastic.","Throw waste in the sea.","Do nothing."], a:0, ex:"第3段落 reducing the plastic we use and by recycling。"}
   ];
 
   // 追加問題（拡充3：使える英語学+10、4技能別問題を全級拡充）
