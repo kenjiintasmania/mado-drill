@@ -1,4 +1,6 @@
-<!-- mado_loop.html | v0.8 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.9 | 2026-06-18 JST -->
+<!--   v0.8→v0.9：3級に「長文読解」ジャンルを新設。大問4・5の長文2本（放送委員Haruka／写真部Daiki）と抜き出し8問を統合。 -->
+<!--   出題時にパッセージを上部表示。答えは本文中に実在する抜き出し型。総計375問。 -->
 <!--   v0.7→v0.8：7・6・5・準2・準2+・2級も増量（MORE3）。全級バランス化。総計367問。 -->
 <!--   v0.6→v0.7：3級・4級を中心に問題増量（MORE2）。3級70問・4級49問・全体250問。4技能別問題も拡充。 -->
 <!--   v0.5→v0.6：「大問テクニック」を「4技能別問題」に改名し、メタ（解き方のコツ）を採点ジャンルから除去→実戦問題に。 -->
@@ -180,6 +182,14 @@
   .exp{font-size:15px;color:#3a4654;margin-top:10px;border-left:4px solid var(--brand2);
     padding:9px 14px;line-height:1.65;background:#f6f9fe;border-radius:0 10px 10px 0;}
 
+  /* 長文読解パッセージ */
+  .passage{background:#fbfcfe;border:1px solid var(--line);border-radius:12px;padding:12px 16px;
+    margin-bottom:13px;max-height:240px;overflow:auto;box-shadow:inset 0 -10px 12px -12px rgba(0,0,0,.06);}
+  .ptitle{font-size:13px;font-weight:800;color:var(--brand-ink);margin-bottom:7px;}
+  .pbody{font-family:var(--en);font-size:15.5px;line-height:1.75;color:#2a2f34;}
+  .pbody p{margin:0 0 8px;}
+  .pnum{font-family:var(--jp);font-size:11px;color:var(--hint);margin-right:5px;}
+
   /* 判定テスト：進捗 */
   .ratebar{height:9px;border-radius:999px;background:var(--line2);overflow:hidden;margin:10px 0 4px;}
   .ratebar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand2),var(--brand));transition:width .35s ease;}
@@ -239,7 +249,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.8";
+  var APP_VER = "v0.9";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
@@ -257,6 +267,7 @@
     {id:"vocab",     name:"単語",       icon:"📖", desc:"単語・熟語・コロケーション",        c:"#2f80c4", cbg:"#e6f1fb"},
     {id:"grammar",   name:"文法",       icon:"🧩", desc:"語順・時制・三単現",             c:"#7c5cd0", cbg:"#efeafb"},
     {id:"technique", name:"4技能別問題", icon:"🎧", desc:"読む・聞く・書く・話すの実戦問題",   c:"#d9803a", cbg:"#fbefe3"},
+    {id:"reading",   name:"長文読解",    icon:"📰", desc:"大問4・5 長文を読んで答える",          c:"#9a6a3a", cbg:"#f4ece1"},
     {id:"practice",  name:"本番練習",    icon:"📝", desc:"本番の形式で力だめし",            c:"#2f9e6e", cbg:"#e7f6ef"},
     {id:"meta",      name:"使える英語学", icon:"💡", desc:"勉強法・会話/作文のコツ",          c:"#2aa6a0", cbg:"#e3f5f3"}
   ];
@@ -935,6 +946,35 @@
     {t:"mc", q:"長文を速く読むコツは？", ch:["タイトルと最初の文で話題をつかむ","全単語を辞書で引く","最後の段落から読む","声に出して一字ずつ"], chJp:true, a:0, ex:"先に話題をつかむと、細部の意味も推測しやすい。"}
   ] };
 
+  /* ====== 長文読解パッセージ（大問4・5 / 抜き出し）====== */
+  var PASSAGES = {
+    haruka:{ title:"放送委員 Haruka のスピーチ「今月の歌」", paras:[
+      "Good morning, everyone. I'm Haruka from the broadcasting committee. Today I want to talk about our new plan, \"Song of the Month.\" This plan will start next month. We hope students will enjoy music and find new songs more easily.",
+      "When I became a junior high school student, I often listened to music in my room. There were so many songs on the internet, but I couldn't choose my favorite one easily. Sometimes I just looked at the long list and went to bed without listening to any songs. One day, I talked about this problem with my family at breakfast. After breakfast, my brother gave me a CD. He said, \"I think you will like this song.\" He was right. I listened to it again and again. I could feel the singer's voice in my heart. It was my first time to enjoy a song so much. I wanted to introduce good songs to other students, so I joined the broadcasting committee.",
+      "In this plan, we will choose one song every month and play it at lunch time. We want to make lunch time fun with music. We are going to play many kinds of songs. Some are pop songs. Some are old songs. Maybe some are songs from other countries. After listening to the song, please send us your comments. We will be very happy to hear from you.",
+      "Some people say young people don't listen to full songs now. My friends listen to only short parts of songs on their phones every day. Of course, I sometimes do, too. There are too many songs on the internet, so maybe many people can't find their favorite songs [ あ ] now.",
+      "Short parts of songs are useful when we want to find new songs quickly. But is that really enjoying music? I don't think so. If you only listen to a short part, you can't [ い ] the singer's true feelings. Good songs [ う ] people happy. So please try to join our new plan, and we hope you will [ え ] us many comments. You can find a good song."
+    ]},
+    daiki:{ title:"Daiki の作文「写真部」", paras:[
+      "When I became a junior high school student, I joined the photo club. I liked taking pictures, so I wanted to take beautiful ones.",
+      "Three months later, in July, we had a photo contest. It was my first one. I decided to take a picture of the mountain near my town. I did many things to take the best picture. I took pictures hard every morning, I read some books about famous photographers' pictures, and I asked some members how to take better pictures. When I finished taking the picture, I thought it was [ え ]. However, I didn't get any prizes. My friend, Shota, said, \"I think your picture needs something.\" I said, \"What is it?\" He said nothing. I thought, \"Maybe I should stop taking pictures because I didn't get a prize.\"",
+      "That night, my grandfather saw the picture. He said, \"This is beautiful, but you look so sad. Why?\" I told him about the contest. He said, \"How did you feel when you saw the mountain in the morning?\" I said, \"The sky slowly changed its color, and the mountain looked really beautiful.\" I told him about my other feelings on that morning, too. He said, \"How about expressing them? Your picture is already good. And don't worry, Daiki. You should keep taking pictures if you really like taking pictures. If you keep taking pictures, your pictures will be better.\" I said, \"That may be right. I'll try again.\"",
+      "The next weekend, I went to the mountain again before breakfast. I thought about the colors of the sky and my town. I expressed my feelings in the picture. One month later, I showed the new picture to our club teacher. She said, \"This picture is really [ う ].\" I joined another contest with the picture. Finally, I got a prize.",
+      "After the contest, I got some prizes. Of course, I sometimes think taking good pictures is difficult. But I don't think that I [ あ ] when I can't get a prize. I will [ い ] pictures in high school."
+    ]}
+  };
+  // 3級「長文読解」ジャンル（答えはすべて本文中にある抜き出し型）
+  BANK["3"].reading = [
+    {t:"fill", p:"haruka", q:"空所(あ)に入る英語1語を本文からそのまま抜き出そう。ヒント：第1・第2段落に同じ語がある。", en:"...maybe many people can't find their favorite songs [ ___ ] now.", a:"easily", ex:"第1段落 find new songs more easily／第2段落 choose my favorite one easily と同じ easily。"},
+    {t:"fill", p:"haruka", q:"空所(い)に入る英語1語を本文から抜き出そう。ヒント：第2段落のCDの場面。", en:"If you only listen to a short part, you can't [ ___ ] the singer's true feelings.", a:"feel", ex:"第2段落 I could feel the singer's voice in my heart の feel。"},
+    {t:"fill", p:"haruka", q:"空所(う)に入る英語1語を本文から抜き出そう。ヒント：第3段落の lunch time の文。", en:"Good songs [ ___ ] people happy.", a:"make", ex:"第3段落 make lunch time fun の make。make A B＝AをBにする。"},
+    {t:"fill", p:"haruka", q:"空所(え)に入る英語1語を本文から抜き出そう。ヒント：第3段落の comments の文。", en:"...we hope you will [ ___ ] us many comments.", a:"send", ex:"第3段落 please send us your comments の send。send＋人＋物。"},
+    {t:"fill", p:"daiki", q:"空所(え)に入る英語2語を本文（第2段落）から抜き出そう。語と語は半角スペースで区切る。", en:"When I finished taking the picture, I thought it was [ ___ ]. However, I didn't get any prizes.", a:"the best", ex:"同じ段落の take the best picture の the best。直後の However（逆接）ともつながる。"},
+    {t:"fill", p:"daiki", q:"空所(う)に入る英語1語を本文から抜き出そう。ヒント：第3段落のおじいさんのことば。", en:"She said, \"This picture is really [ ___ ].\"", a:"good", ex:"第3段落 Your picture is already good の good が先生の really good につながる。"},
+    {t:"fill", p:"daiki", q:"空所(あ)に入る英語3語を本文から抜き出そう。ヒント：第2段落の最後。半角スペースで区切る。", en:"But I don't think that I [ ___ ] when I can't get a prize.", a:"should stop taking", ex:"第2段落 Maybe I should stop taking pictures の3語。前の気持ちとの対比。"},
+    {t:"fill", p:"daiki", q:"空所(い)に入る英語2語を本文から抜き出そう。ヒント：第3段落のおじいさんのことば。半角スペースで区切る。", en:"I will [ ___ ] pictures in high school.", a:"keep taking", ex:"第3段落 You should keep taking pictures の keep taking。keep ～ing＝〜し続ける。"}
+  ];
+
   /* ============================ 採点ユーティリティ ============================ */
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
   function enHTML(s){return esc(s).replace(/Y/g,'<span class="y">Y</span>');}
@@ -1102,6 +1142,7 @@
     }else{
       var gmn=genreMeta(S.genre);
       body=''+
+        (S.q.p?renderPassage(S.q.p):'')+
         '<div class="tech" style="--tc:'+gmn.c+';--tcb:'+gmn.cbg+'">'+gmn.icon+' '+esc(gmn.desc)+'</div>'+
         '<div class="q">'+esc(S.q.q||"")+'</div>'+
         (S.q.en?'<div class="sent">'+enHTML(S.q.en)+'</div>':'')+
@@ -1146,6 +1187,14 @@
       var c=q.ch[orig];
       return '<button class="ch'+enCls+'" data-i="'+orig+'"><span class="mk">'+(disp+1)+'</span><span class="txt">'+(q.chJp?esc(c):enHTML(c))+'</span></button>';
     }).join("")+'</div>';
+  }
+
+  // 長文パッセージの表示
+  function renderPassage(pid){
+    var p=PASSAGES[pid]; if(!p)return "";
+    return '<div class="passage"><div class="ptitle">'+esc(p.title)+'</div><div class="pbody">'+
+      p.paras.map(function(t,i){return '<p><span class="pnum">【第'+(i+1)+'段落】</span>'+enHTML(t)+'</p>';}).join("")+
+      '</div></div>';
   }
 
   // 出題の採点ロジック（訓練・テスト共通の判定部分）
@@ -1259,6 +1308,7 @@
     '<div class="card">'+
       '<div class="prog">'+esc(gm.name)+' 判定テスト（'+(t.mode==="quick"?"クイック":"フル")+'）　'+(t.idx+1)+' / '+t.queue.length+'</div>'+
       '<div class="ratebar"><i style="width:'+Math.round(t.idx/t.queue.length*100)+'%"></i></div>'+
+      (S.q.p?renderPassage(S.q.p):'')+
       '<div class="q" style="margin-top:10px;">'+esc(S.q.q||"")+'</div>'+
       (S.q.en?'<div class="sent">'+enHTML(S.q.en)+'</div>':'')+
       renderInput(S.q)+
