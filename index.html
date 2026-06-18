@@ -1,4 +1,5 @@
-<!-- mado_loop.html | v0.22 | 2026-06-18 JST -->
+<!-- mado_loop.html | v0.23 | 2026-06-18 JST -->
+<!--   v0.22→v0.23：最高★の黒外枠を◯のリングと同じ2.5pxに（視認性UP）。 -->
 <!--   v0.21→v0.22：最高マーカーを「白抜き・黒外枠の星★」に（円ではなく星形のまま）。直近=青リング◯／最高=白黒の星★。 -->
 <!--   v0.20→v0.21：レベルバーの最高マーカーを◯と同サイズの白抜き・黒外枠の円に変更（直近=青リング／最高=黒リングで区別）。 -->
 <!--   v0.19→v0.20：レベルバーの最高(✩)を全級通算のグローバル最高位置に修正（旧級別ベストから自動移行）。直近◯＋最高✩が正しく併記。 -->
@@ -85,8 +86,8 @@
   .lb-pointer{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
     background:#fff;border:2.5px solid var(--brand);box-shadow:0 1px 5px rgba(0,0,0,.35);
     transition:left .45s cubic-bezier(.3,.9,.3,1);z-index:2;}
-  .lb-best{position:absolute;top:50%;left:0;transform:translate(-50%,-55%);font-size:18px;line-height:1;z-index:1;
-    color:#fff;-webkit-text-stroke:1.6px #000;paint-order:stroke;pointer-events:none;
+  .lb-best{position:absolute;top:50%;left:0;transform:translate(-50%,-55%);font-size:19px;line-height:1;z-index:1;
+    color:#fff;-webkit-text-stroke:2.5px #000;paint-order:stroke;pointer-events:none;
     text-shadow:0 1px 1px rgba(0,0,0,.25);transition:left .45s cubic-bezier(.3,.9,.3,1);}
   .lb-scale{position:relative;height:13px;margin-top:5px;}
   .lb-cell{position:absolute;top:0;font-size:9.5px;color:var(--hint);line-height:1.1;white-space:nowrap;}
@@ -321,7 +322,7 @@
 
 <script>
 (function(){
-  var APP_VER = "v0.22";
+  var APP_VER = "v0.23";
 
   /* ============================ 級・ジャンル定義 ============================ */
   var GRADES = [
