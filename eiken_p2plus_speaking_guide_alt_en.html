@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EIKEN Pre-2 Plus Speaking — Guide &amp; Mock Script (for ALTs)</title>
+<style>
+  :root{
+    --jp:"游ゴシック","Yu Gothic","Hiragino Sans","Noto Sans JP",sans-serif;
+    --ui:"Segoe UI","Helvetica Neue",Arial,var(--jp),sans-serif;
+    --serif:Georgia,"Times New Roman",serif;
+    --ink:#1f2328; --muted:#5f6368; --hint:#8a8f94;
+    --line:#dadce0; --card:#ffffff; --bg:#f6f7f8; --blue:#185fa5; --blue-bg:#e6f1fb;
+    --ok:#0f6e56; --ok-bg:#e1f5ee; --ng:#a32d2d; --ng-bg:#fceaea;
+    --warn:#9a6b00; --warn-bg:#fff6dd;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{margin:0;background:var(--bg);font-family:var(--ui);color:var(--ink);
+    -webkit-text-size-adjust:100%;padding:18px;line-height:1.65;}
+  .wrap{max-width:840px;margin:0 auto;}
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;}
+  .btn{font-family:var(--ui);font-size:15px;padding:9px 18px;border-radius:8px;cursor:pointer;
+    border:1px solid var(--blue);background:var(--blue);color:#fff;}
+  .btn:hover{opacity:.92;}
+  .tip{font-size:12px;color:var(--hint);}
+  header{border-bottom:3px solid var(--blue);padding-bottom:10px;margin-bottom:16px;}
+  .badge{display:inline-block;background:var(--blue);color:#fff;font-size:11px;font-weight:700;
+    border-radius:6px;padding:2px 8px;letter-spacing:.04em;margin-bottom:6px;}
+  h1{font-size:22px;font-weight:700;margin:0 0 4px;color:var(--blue);}
+  .sub{font-size:13px;color:var(--muted);}
+  .note{font-size:12.5px;color:var(--warn);background:var(--warn-bg);border:1px solid #efd99a;
+    border-radius:10px;padding:9px 13px;margin:14px 0;}
+  .note a{color:var(--blue);}
+  h2{font-size:17px;font-weight:700;color:var(--blue);margin:24px 0 10px;
+    padding-bottom:5px;border-bottom:2px solid var(--blue-bg);break-after:avoid;}
+  .facts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:6px 0;}
+  .fact{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;}
+  .fact .k{font-size:12px;color:var(--muted);}
+  .fact .v{font-size:15px;font-weight:700;}
+  table{width:100%;border-collapse:collapse;margin:6px 0;font-size:13.5px;break-inside:avoid;}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--blue-bg);color:var(--blue);font-weight:700;}
+  .crit{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:6px 0;}
+  .crit .c{background:var(--ok-bg);border:1px solid #b9e3d4;border-radius:10px;padding:9px;
+    text-align:center;font-size:12.5px;font-weight:700;color:var(--ok);}
+  ul.bul{margin:6px 0;padding-left:20px;}
+  ul.bul li{margin:5px 0;font-size:14px;}
+  .scorebox{background:var(--blue-bg);border:1px solid #bcd9f3;border-left:5px solid var(--blue);
+    border-radius:10px;padding:11px 15px;margin:8px 0;font-size:13.5px;}
+  /* ---- mock script ---- */
+  .howto{background:var(--warn-bg);border:1px solid #efd99a;border-radius:10px;
+    padding:10px 14px;margin:8px 0;font-size:13px;}
+  .howto code{background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;}
+  .testcard{border:2px solid var(--blue);border-radius:12px;overflow:hidden;margin:12px 0;break-inside:avoid;}
+  .testcard .ribbon{background:var(--blue);color:#fff;font-weight:700;padding:7px 14px;font-size:14px;}
+  .testcard .body{padding:13px 16px;}
+  .ptitle{font-weight:700;color:var(--blue);font-size:14px;margin:0 0 6px;}
+  .passage{font-family:var(--serif);font-size:15px;line-height:1.8;background:#fbfcfd;
+    border:1px solid var(--line);border-radius:8px;padding:12px 15px;margin:2px 0 12px;}
+  .firstline{font-family:var(--serif);font-weight:700;font-size:14.5px;background:var(--blue-bg);
+    border:1px dashed var(--blue);border-radius:8px;padding:8px 12px;margin:8px 0;}
+  .firstline small{display:block;font-family:var(--ui);font-weight:400;color:var(--muted);font-size:11.5px;}
+  .panels{margin:8px 0 0;padding:0;list-style:none;counter-reset:p;}
+  .panels li{position:relative;padding:8px 0 8px 42px;border-top:1px solid var(--line);font-size:13.5px;}
+  .panels li:before{counter-increment:p;content:"P"counter(p);position:absolute;left:0;top:8px;
+    background:var(--blue);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;}
+  .cap{font-weight:700;color:var(--blue);}
+  .scriptwrap{border:1px solid var(--line);border-radius:12px;padding:6px 16px 14px;background:var(--card);}
+  .stage{font-weight:700;color:var(--blue);font-size:12.5px;letter-spacing:.03em;
+    margin:16px 0 6px;text-transform:uppercase;}
+  .line{margin:7px 0;padding-left:14px;border-left:3px solid var(--blue);}
+  .who{font-weight:700;color:var(--blue);}
+  .cue{color:var(--muted);font-style:italic;font-size:12.5px;}
+  .model{background:var(--ok-bg);border:1px solid #b9e3d4;border-left:4px solid var(--ok);
+    border-radius:8px;padding:7px 12px;margin:5px 0 12px;font-size:13px;}
+  .model b{color:var(--ok);}
+  .model .en{font-family:var(--serif);font-style:italic;}
+  .branch{font-size:12.5px;color:var(--muted);margin:3px 0 0 14px;}
+  /* feedback sheet */
+  .fb{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;break-inside:avoid;}
+  .fb th,.fb td{border:1px solid var(--line);padding:8px;}
+  .fb th{background:var(--blue-bg);color:var(--blue);}
+  .fb td.ck{width:62px;text-align:center;color:var(--hint);}
+  .fb .fill{height:30px;}
+  footer{margin-top:26px;padding-top:10px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--hint);}
+  @page{size:A4;margin:14mm;}
+  @media print{
+    body{background:#fff;padding:0;}
+    .noprint{display:none !important;}
+    .page-break{break-before:page;}
+  }
+  @media(max-width:560px){
+    .facts{grid-template-columns:1fr;}
+    .crit{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toolbar noprint">
+    <button class="btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <span class="tip">Print (Ctrl/⌘+P) → Paper: A4, turn ON "Background graphics" for a clean handout.</span>
+  </div>
+
+  <header>
+    <span class="badge">FOR ALT USE</span>
+    <h1>EIKEN Grade Pre-2 Plus — Speaking (Second-Stage) Interview</h1>
+    <div class="sub">Guide &amp; Mock-Interview Script · English Dept. · June 2026</div>
+  </header>
+
+  <div class="note">
+    ⚠️ A practical summary (June 2026) for running practice interviews. EIKEN does <b>not</b> publish per-question point values — confirm details on the
+    <a href="https://www.eiken.or.jp/eiken/exam/grade_p2plus/solutions.html">official page</a> and the
+    <a href="https://www.eiken.or.jp/eiken/exam/virtual/grade_p2plus/">Virtual Interview animation</a>.
+  </div>
+
+  <h2>1 · Quick Overview</h2>
+  <div class="facts">
+    <div class="fact"><div class="k">Format</div><div class="v">1-on-1, single examiner · all English</div></div>
+    <div class="fact"><div class="k">Length</div><div class="v">about 6–7 minutes</div></div>
+    <div class="fact"><div class="k">Level</div><div class="v">between Pre-2 and Grade 2 (upper-secondary)</div></div>
+    <div class="fact"><div class="k">Materials</div><div class="v">problem card: ~60-word passage + 3-panel illustration</div></div>
+  </div>
+
+  <h2>2 · Format at a Glance</h2>
+  <table>
+    <tr><th style="width:20%;">Task</th><th style="width:46%;">What the student does</th><th>What it checks</th></tr>
+    <tr><td><b>Reading aloud</b></td><td>Read the ~60-word passage</td><td>Pronunciation, intonation, fluency</td></tr>
+    <tr><td><b>No.1</b></td><td>Answer a question <b>about the passage</b></td><td>Comprehension; answer drawn from the text</td></tr>
+    <tr><td><b>No.2 (Narration)</b></td><td>Describe a <b>3-panel illustration</b>; <b>20 sec prep</b>, must <b>begin with the sentence on the card</b></td><td>Past / past-continuous, sequencing, actions &amp; feelings</td></tr>
+    <tr><td><b>No.3</b></td><td>Give own <b>opinion on the card's topic</b></td><td>Opinion + reason(s)</td></tr>
+    <tr><td><b>No.4</b></td><td>Give own <b>opinion on a general/social topic</b></td><td>Opinion + reason(s)</td></tr>
+  </table>
+  <div class="scorebox">The student turns the card <b>face-down</b> before No.3 &amp; No.4.</div>
+
+  <h2>3 · Assessment Criteria (5 viewpoints)</h2>
+  <div class="crit">
+    <div class="c">Content</div>
+    <div class="c">Pronunciation</div>
+    <div class="c">Vocabulary / Grammar</div>
+    <div class="c">Amount of information</div>
+    <div class="c">Attitude</div>
+  </div>
+  <div class="scorebox">Reported on the <b>CSE</b> scale (Speaking out of <b>625</b>; passing ≈ <b>427</b> — confirm officially). <b>Attitude</b> = active willingness to communicate: eye contact, audible voice, not giving up. Item-level points are <b>not</b> published.</div>
+
+  <h2>4 · Coaching Tips for ALTs</h2>
+  <ul class="bul">
+    <li>Push for <b>full sentences</b> and a <b>reason</b> ("…because…").</li>
+    <li>For No.2, encourage <b>time markers</b> ("One day," "Ten minutes later," "That afternoon,") and <b>feelings</b> ("She looked worried.").</li>
+    <li>Reward <b>attitude</b>: eye contact, a smile, a clear voice — and <i>tell</i> the student it counts.</li>
+    <li>Teach <b>stalling</b> ("Let me see…") and <b>asking again</b> ("Could you say that again, please?") so silence never wins.</li>
+    <li>Stay encouraging; give corrections <b>after</b> the run, not during it.</li>
+  </ul>
+
+  <!-- ===================== MOCK SCRIPT ===================== -->
+  <div class="page-break"></div>
+  <h2>5 · Mock Interview Script — Card A</h2>
+  <div class="howto">
+    <b>How to use:</b> read the <b>examiner lines aloud</b>. <code>[ ]</code> = your actions / cues.
+    <b style="color:var(--ok)">➤</b> = a <b>model answer</b> to compare against (don't read these to the student).
+    The picture is in words — sketch three quick panels, or just read the panel descriptions aloud.
+  </div>
+
+  <div class="testcard">
+    <div class="ribbon">🟦 PROBLEM CARD A — give to the student</div>
+    <div class="body">
+      <div class="ptitle">Passage — "Bring Your Own Bag"</div>
+      <div class="passage">These days, many people try to protect the environment in small ways. For example, some people bring their own bags when they go shopping. By doing so, they can reduce the number of plastic bags they use. Some shops also give points to customers who bring their own bags. In this way, stores and customers are working together to help the environment.</div>
+      <div class="ptitle">Illustration (3 panels)</div>
+      <div class="firstline">"One morning, Mika was watching TV at home."
+        <small>↑ First sentence printed on the card — the student must begin with this.</small></div>
+      <ul class="panels">
+        <li>Mika watches the weather news; the screen shows <b>rain in the afternoon</b>. She is <b>not</b> holding an umbrella.</li>
+        <li><span class="cap">"That afternoon"</span> — Mika is at school looking out the window. It is <b>raining hard</b>. She looks <b>worried</b>.</li>
+        <li><span class="cap">"After school"</span> — a friend is <b>sharing an umbrella</b> with Mika. Mika looks <b>happy</b>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="scriptwrap">
+    <div class="stage">▶ Greeting</div>
+    <div class="line"><span class="who">Examiner:</span> Hello. May I have your card, please? … Thank you.</div>
+    <div class="line"><span class="who">Examiner:</span> My name is ______. May I have your name, please? <span class="cue">(Student: "My name is …")</span></div>
+    <div class="line"><span class="who">Examiner:</span> This is the Grade Pre-2 Plus test. How are you today? <span class="cue">(brief chat — not scored)</span></div>
+
+    <div class="stage">▶ Reading</div>
+    <div class="line"><span class="who">Examiner:</span> OK, let's start. Here is your card. First, please read the passage <b>silently for 20 seconds</b>. <span class="cue">[wait 20 sec]</span></div>
+    <div class="line"><span class="who">Examiner:</span> Now, please read it <b>aloud</b>. <span class="cue">[student reads]</span></div>
+
+    <div class="stage">▶ No.1 — about the passage</div>
+    <div class="line"><span class="who">Examiner:</span> Now I'll ask you four questions. <b>No.1</b> — According to the passage, how do some shops help to reduce the number of plastic bags?</div>
+    <div class="model"><b>➤ Model:</b> <span class="en">"By giving points to customers who bring their own bags."</span></div>
+
+    <div class="stage">▶ No.2 — narration</div>
+    <div class="line"><span class="who">Examiner:</span> <b>No.2</b> — Now, please look at the picture and describe the situation. You have <b>20 seconds</b> to prepare. Your story should <b>begin with the sentence on the card</b>. <span class="cue">[wait 20 sec]</span> … Please begin.</div>
+    <div class="model"><b>➤ Model:</b> <span class="en">"One morning, Mika was watching TV at home. The weather news said it would rain in the afternoon, but she didn't take her umbrella. That afternoon, it was raining hard, and Mika was looking out the window at school. She looked worried because she didn't have an umbrella. After school, her friend was sharing an umbrella with her, so Mika looked happy."</span></div>
+
+    <div class="stage">▶ Turn the card over</div>
+    <div class="line"><span class="who">Examiner:</span> Now, please <b>turn the card over</b>.</div>
+
+    <div class="stage">▶ No.3 — opinion on the topic</div>
+    <div class="line"><span class="who">Examiner:</span> <b>No.3</b> — Do you think more people will bring their own bags when they go shopping in the future?</div>
+    <div class="branch"><b>[If "Yes" →]</b> Why? &nbsp;·&nbsp; <b>[If "No" →]</b> Why not?</div>
+    <div class="model"><b>➤ Model (Yes):</b> <span class="en">"Yes, I do. Many people want to protect the environment, and bringing a bag is easy. Also, some shops give points, so it is good for shoppers, too."</span></div>
+
+    <div class="stage">▶ No.4 — general topic</div>
+    <div class="line"><span class="who">Examiner:</span> <b>No.4</b> — Today, many people enjoy outdoor activities such as camping and hiking. Do you like spending time outside?</div>
+    <div class="branch"><b>[If "Yes" →]</b> Please tell me more. &nbsp;·&nbsp; <b>[If "No" →]</b> Why not?</div>
+    <div class="model"><b>➤ Model (Yes):</b> <span class="en">"Yes, I do. I feel relaxed when I am in nature. For example, I often walk in the park with my family on weekends."</span></div>
+
+    <div class="stage">▶ Closing</div>
+    <div class="line"><span class="who">Examiner:</span> This is the end of the test. May I have the card back, please? … You may go now. Goodbye.</div>
+  </div>
+
+  <h2>6 · Quick Feedback Sheet</h2>
+  <table class="fb">
+    <tr><th>Criterion</th><th class="ck">🙂</th><th class="ck">😐</th><th class="ck">🙁</th><th>Comment</th></tr>
+    <tr><td>Content (answered the question)</td><td class="ck">○</td><td class="ck">○</td><td class="ck">○</td><td></td></tr>
+    <tr><td>Pronunciation</td><td class="ck">○</td><td class="ck">○</td><td class="ck">○</td><td></td></tr>
+    <tr><td>Vocabulary / Grammar</td><td class="ck">○</td><td class="ck">○</td><td class="ck">○</td><td></td></tr>
+    <tr><td>Amount of information (said enough)</td><td class="ck">○</td><td class="ck">○</td><td class="ck">○</td><td></td></tr>
+    <tr><td>Attitude (voice, eye contact, didn't give up)</td><td class="ck">○</td><td class="ck">○</td><td class="ck">○</td><td></td></tr>
+    <tr><td>✅ One thing you did well</td><td colspan="4" class="fill"></td></tr>
+    <tr><td>🎯 One thing to practice</td><td colspan="4" class="fill"></td></tr>
+  </table>
+
+  <!-- ===================== SPARE CARD ===================== -->
+  <div class="page-break"></div>
+  <h2>7 · Spare Card B — for a second run</h2>
+  <div class="testcard">
+    <div class="ribbon">🟩 PROBLEM CARD B</div>
+    <div class="body">
+      <div class="ptitle">Passage — "Friday at the Library"</div>
+      <div class="passage">Many schools want students to read more books. At one junior high school, the library started a new event. Every Friday, students can borrow two extra books. Teachers also show their favorite books to the students. Since the event began, more students have come to the library, and they enjoy talking about books with their friends.</div>
+      <div class="firstline">"One day, Ken was looking for a book in the library."
+        <small>↑ First sentence printed on the card.</small></div>
+      <ul class="panels">
+        <li>Ken can't find the book he wants; he looks <b>troubled</b>.</li>
+        <li><span class="cap">"A few minutes later"</span> — a teacher <b>shows Ken an interesting book</b>.</li>
+        <li><span class="cap">"That night"</span> — Ken is <b>reading the book at home</b> and enjoying it.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="scriptwrap">
+    <div class="line"><span class="who">No.1:</span> According to the passage, what can students do every Friday?</div>
+    <div class="model"><b>➤ Model:</b> <span class="en">"They can borrow two extra books."</span></div>
+    <div class="line"><span class="who">No.2 (Narration):</span> begin with the sentence on the card.</div>
+    <div class="model"><b>➤ Model:</b> <span class="en">"One day, Ken was looking for a book in the library, but he couldn't find one he liked. A few minutes later, a teacher showed him an interesting book. That night, Ken was reading the book at home, and he looked very happy."</span></div>
+    <div class="line"><span class="who">No.3:</span> Do you think students will read more paper books in the future? <span class="cue">[Yes → Why? / No → Why not?]</span></div>
+    <div class="line"><span class="who">No.4:</span> Today, many people listen to audiobooks. Do you like listening to stories? <span class="cue">[Yes → Please tell me more. / No → Why not?]</span></div>
+  </div>
+
+  <footer>Prepared for ALT use · Sources: EIKEN official site &amp; test-prep references (June 2026). Sample passages and illustrations are original, for practice only.</footer>
+</div>
+</body>
+</html>
