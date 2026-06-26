@@ -1,0 +1,373 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#5b7cff">
+<title>AI練習メニュー｜Phase 1（R&D）</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🧭</text></svg>">
+<!-- AI練習メニュー（Phase 1）：localStorage の記録から練習プロンプトを作る INDEX。 -->
+<style>
+  :root{
+    --jp:'游ゴシック','Yu Gothic',sans-serif;
+    --ink:#2b2b3a; --paper:#fffdf6; --line:#e7e0cf;
+    --accent3:#5b7cff; --m1:#39b3a6; --m2:#5b7cff; --m3:#ff7a59; --m4:#a35bff; --m5:#e0a32e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:
+      radial-gradient(1200px 500px at 110% -10%,#e7ecff 0,transparent 60%),
+      radial-gradient(900px 500px at -10% 110%,#d8f3ef 0,transparent 55%),
+      var(--paper);
+    color:var(--ink);font-family:var(--jp);line-height:1.6;padding:16px 14px 80px}
+  .wrap{max-width:860px;margin:0 auto}
+  .crumbs{font-size:13px;margin:2px 0 8px}
+  .crumbs a{color:var(--accent3);text-decoration:none;font-weight:bold}
+  .hero h1{font-size:24px;margin:6px 0 0;text-align:center}
+  .hero p{color:#7a7363;font-size:13.5px;margin:6px 0 0;text-align:center}
+  .ver{color:#b3ab98;font-size:11px}
+
+  .consent{background:#fff6e6;border:2px dashed #f0c879;border-radius:12px;
+    padding:10px 12px;margin:12px 0;font-size:13px;color:#7a5b1e}
+  .consent b{color:#b9791b}
+
+  .card{background:#fff;border:3px solid var(--line);border-radius:16px;
+    padding:14px;margin:14px 0;box-shadow:0 5px 0 #efe7d4}
+  .card h2{font-size:17px;margin:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card h2 .emoji{font-size:20px}
+  .card h2 .badge{margin-left:auto;font-size:11.5px;font-weight:bold;padding:2px 9px;border-radius:999px}
+  .badge.open{background:#e3f6e8;color:#2e9e57}
+  .badge.gate{background:#fdf0e1;color:#c47a25}
+
+  .diag{display:flex;gap:8px;flex-wrap:wrap}
+  .diag .mini{background:#fbf9f1;border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;min-width:120px}
+  .diag .k{font-size:11.5px;color:#7a7363}
+  .diag .v{font-size:16px;font-weight:bold}
+  .weak{font-size:13px;color:#7a7363;margin:8px 0 0}
+  .weak b{color:#d9603e}
+
+  .mode{border-color:#e6dcc6}
+  .mode.m1{border-color:#cfe6e1}.mode.m2{border-color:#cdd9ff}
+  .mode.m3{border-color:#ffd9cc}.mode.m4{border-color:#e7d6ff}.mode.m5{border-color:#f3e3b6}
+  .mode .desc{font-size:13px;color:#5b5647;margin:0 0 8px}
+  textarea.pt{width:100%;min-height:128px;font:inherit;font-size:13px;line-height:1.55;
+    border:2px solid var(--line);border-radius:10px;padding:9px;background:#fffdf6;color:var(--ink);resize:vertical}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .btn{font:inherit;font-size:14px;font-weight:bold;border:none;border-radius:10px;
+    padding:8px 16px;cursor:pointer;color:#fff;background:var(--accent3);box-shadow:0 3px 0 #3f5fd6}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #3f5fd6}
+  .btn.ghost{background:#fff;color:var(--accent3);border:2px solid var(--accent3);box-shadow:0 3px 0 #dfe2f5}
+  .copied{font-size:12.5px;color:#2e9e57;font-weight:bold}
+  .locked{opacity:.55}
+  .locknote{font-size:12.5px;color:#c47a25;margin:6px 0 0}
+
+  .checklist{font-size:13px;color:#5b5647;margin:6px 0 8px;padding-left:18px}
+  .checklist li{margin:2px 0}
+  details summary{cursor:pointer;font-weight:bold;color:var(--accent3);font-size:14px}
+  .foot{font-size:11.5px;color:#b3ab98;margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+  .manual{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:#7a7363}
+  .manual select,.manual input{font:inherit;font-size:14px;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:#fffdf6}
+  footer{text-align:center;color:#b3ab98;font-size:12px;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumbs" style="color:#9a927e">デモ版（記録が無いので「手動でレベルを選ぶ」でお試しください）</div>
+  <div class="hero">
+    <h1>AI練習メニュー 🧭 <span class="ver" id="ver"></span></h1>
+  </div>
+
+  <!-- 診断 -->
+  <div class="card">
+    <h2><span class="emoji">📊</span>いまの目安<span class="badge open" id="src_badge">記録から</span></h2>
+    <div class="diag">
+      <div class="mini"><div class="k">英語レベルの目安</div><div class="v" id="d_level">–</div></div>
+      <div class="mini"><div class="k">英検の目安</div><div class="v" id="d_eiken">–</div></div>
+      <div class="mini"><div class="k">いまの段階</div><div class="v" id="d_stage">知識</div></div>
+    </div>
+    <p class="weak" id="d_weak"></p>
+    <div class="manual" id="manualBox" style="margin-top:10px">
+      記録が無いときは手動で選ぶ：
+      <select id="manualLv">
+        <option value="">レベルを選ぶ</option>
+        <option value="2">英検5級ぐらい</option>
+        <option value="4">英検4級ぐらい</option>
+        <option value="5">英検3級ぐらい</option>
+        <option value="6">英検準2級ぐらい</option>
+        <option value="8">英検2級ぐらい</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- モード群 -->
+  <div id="modes"></div>
+
+  <!-- 先生ゲート -->
+  <div class="card" style="border-color:#dfe6cf">
+    <h2><span class="emoji">🧑‍🏫</span>先生モード</h2>
+    <div class="row">
+      <button class="btn ghost" id="unlockBtn">思考〜フリーパスを開く（先生）</button>
+      <span class="copied" id="unlockMsg"></span>
+    </div>
+  </div>
+
+  <!-- まとめ送信 -->
+  <div class="card" style="border-color:#cdd9ff">
+    <h2><span class="emoji">📤</span>まとめを送信</h2>
+    <p class="desc" style="font-size:13px;color:#5b5647">AIへ「<b>まとめ</b>」と言うと8項目が出ます。コピーして<b>ここに貼りつけ</b>、8番（今日の振り返り）を書いてから<b>送信</b>しましょう。</p>
+    <div class="manual" style="margin-bottom:8px">学年 <select id="f_cls"><option value="">-</option><option value="1">1年</option><option value="2">2年</option><option value="3">3年</option></select> 番号 <input id="f_num" inputmode="numeric" style="width:60px"> 名前 <input id="f_name" style="width:110px" placeholder="任意"></div>
+    <textarea class="pt" id="logBox" rows="11" placeholder="ここにAIの「まとめ」を貼りつけて、8番（今日の振り返り）を書く。"></textarea>
+    <div class="row"><button class="btn" id="sendBtn">送信</button><span class="copied" id="sendmsg"></span></div>
+    <div style="font-size:11.5px;color:#9a927e;margin-top:8px">GASの応答（下に表示されます）：<code>{"result":"ok"}</code> なら成功。ログイン画面が出たらアクセスが「全員」でない。</div>
+    <iframe id="gas_sink" name="gas_sink" style="width:100%;height:110px;border:1px dashed var(--line);border-radius:8px;background:#fff;margin-top:4px"></iframe>
+  </div>
+
+  <footer>Phase 1 INDEX</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var APP_VER="ai 0.6 (phase1)";
+  // 送信先GASの /exec URL（log_gas.gs をデプロイして貼る。空なら送信オフ）
+  var LOG_GAS_URL="https://script.google.com/macros/s/AKfycbzJ2HThmRaf6Okkj682KOlxULwv_uQEtrdwbxCFyqOB5w8yKHa5bRpB9VTCEU3R2bCt/exec";
+  var $=function(id){return document.getElementById(id);};
+  $("ver").textContent=APP_VER;
+
+  /* ---- localStorage ヘルパ（マイページと同じ） ---- */
+  function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function lsJSON(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
+  function lsNum(k){var v=lsGet(k);return v==null?null:parseFloat(v);}
+  function han(s){return (s||"").replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-65248);}).replace(/[^0-9]/g,"");}
+
+  /* ---- 英検レベル座標(0〜8)とラベル（マイページ準拠） ---- */
+  var LBL=["7未満","7級","6級","5級","4級","3級","準2級","準2+","2級"];
+  function levelLabel(L){
+    if(L==null)return "まだ判定なし";
+    if(L<1)return "英検7級にチャレンジ中"; if(L>=8)return "英検2級レベル";
+    var i=Math.floor(L+1e-9),f=L-i;
+    if(f<0.125)return "英検"+LBL[i]+"ギリ"; if(f<0.625)return "英検"+LBL[i]+"前後";
+    return "英検"+LBL[Math.min(i+1,8)]+"の手前";
+  }
+  var GN={"7":"7級","6":"6級","5":"5級","4":"4級","3":"3級","pre2":"準2級","pre2plus":"準2級+","2":"2級"};
+
+  /* ---- 記録の読取（localStorage） ---- */
+  function readData(){
+    var avgO=lsJSON("mado_levelavg_v1");
+    var eiken={ full:lsNum("mado_bestfull_v1"), quick:lsNum("mado_bestquick_v1"),
+      avg:(avgO&&avgO.count)?avgO.sum/avgO.count:null, last:lsJSON("mado_loop_lasttest_v1") };
+    var mb=lsJSON("mogi_best_v1")||{}, mBest=0, mDone=0;
+    Object.keys(mb).forEach(function(k){ if(mb[k]){mDone++; if((mb[k].best||0)>mBest)mBest=mb[k].best||0;} });
+    var sh=lsJSON("shuku_v1")||{};
+    function one(id){var r=sh[id]; return r?{pct:r.max?Math.round((r.best||0)/r.max*100):0,count:r.count||0}:null;}
+    var store=lsJSON("tango_v2")||{}, cleared=store.cleared||{}, wAll=Object.keys(cleared).length;
+    return { eiken:eiken, mBest:mBest, mDone:mDone, c2:one("c2"), c3:one("c3s2"), wAll:wAll,
+      year:lsGet("mado_year")||"", policy:lsGet("mado_policy")||"" };
+  }
+
+  /* ---- 診断：客観データ→レベル座標Lと弱点（S1/S2のみ客観判定） ---- */
+  function diagnose(D, manualL){
+    var L = manualL!=null ? manualL
+          : (D.eiken.full!=null?D.eiken.full
+          : (D.eiken.avg!=null?D.eiken.avg
+          : (D.c3&&D.c3.pct>=80?5 : (D.c2&&D.c2.pct>=80?4 : (D.mBest>=70?4:(D.wAll>0?3:null))))));
+    var weak=[];
+    if(D.c2 && D.c2.pct<80) weak.push("中2の単語（"+D.c2.pct+"%）");
+    if(D.c3 && D.c3.pct<80) weak.push("中3の単語（"+D.c3.pct+"%）");
+    if(D.eiken.last && !D.eiken.last.pass) weak.push("英検"+(GN[D.eiken.last.grade]||"")+"の見直し");
+    if(D.mDone>0 && D.mBest<60) weak.push("模試の得点（最高"+D.mBest+"点）");
+    // readiness(客観): 知識が固まっていれば思考まで開く。議論以上は客観では測れない。
+    var knowSolid = (D.c2&&D.c2.pct>=80) || (D.c3&&D.c3.pct>=80) || (L!=null&&L>=5);
+    var stage = (L==null)?"知識" : (knowSolid?"思考":"知識");
+    return { L:L, weak:weak, stage:stage, knowSolid:!!knowSolid, hasData:(L!=null) };
+  }
+
+  /* ---- レベル座標→使ってよい文法・語彙・英検級 ---- */
+  function rangeFor(L){
+    if(L==null) return {label:"基礎", grade:"5級", grammar:"be動詞・一般動詞の現在形、複数形、can、疑問文", vocab:"身近な基礎語"};
+    if(L<4)  return {label:"英検5級前後", grade:"5級", grammar:"現在形、複数形、代名詞、can、be動詞の疑問・否定", vocab:"身近な基礎語"};
+    if(L<5)  return {label:"英検4級前後", grade:"4級", grammar:"現在形・過去形・未来(will/be going to)・助動詞(must/should)・比較の基本・不定詞の基本", vocab:"基本語＋中2範囲の既習語"};
+    if(L<6)  return {label:"英検3級前後", grade:"3級", grammar:"＋現在完了・受動態・関係代名詞(基本)・動名詞・接続詞", vocab:"中3範囲までの語"};
+    if(L<7)  return {label:"英検準2級前後", grade:"準2級", grammar:"＋いろいろな時制・分詞・句動詞・複文", vocab:"準2級レベルの語"};
+    return     {label:"英検準2+〜2級", grade:"準2級+", grammar:"高校英文法の基礎全般", vocab:"準2級+〜2級の語"};
+  }
+
+  /* ---- 共通の制約文（範囲＋摂動原理：範囲外の新例/答えを渡さない） ---- */
+  function rules(R){
+    return "【約束】\n"
+      +"・"+R.grade+"の範囲で。むずかしい範囲外の表現は使わない（必要なら短い説明だけ）。\n"
+      +"・使ってよい文法："+R.grammar+"。\n"
+      +"・教科書に出ていない<新しい例>で出して（暗記の丸写しにせず、その場で考えさせて）。\n"
+      +"・答えをすぐ教えない。まちがえたら「なぜそう考えた？」と問い返して、自分で直させて。\n"
+      +"・むやみにほめない。よい所は具体的に、直す所は一つずつ。\n"
+      +"【切りかえの言葉】「難易度を下げて」「暗記モード」「議論モード」「まとめ」\n"
+      +"【「まとめ」と言われたら】次の8項目で出す（1〜7は今日の会話から記入、8は空欄にして生徒に書かせる）：\n"
+      +"1.今日の目的／2.使ったモード／3.途中で変えたモード／4.使えた単語・文法／5.難しかったこと／6.次回やること／7.AI活用レベルの自己評価(知識/思考/議論/探求)／8.今日の振り返り(生徒が記入)";
+  }
+
+  /* ---- 5モードのプロンプト生成（Paper A） ---- */
+  function buildPrompts(diag){
+    var R=rangeFor(diag.L), r=rules(R);
+    return [
+      { n:"①", key:"m1", cls:"m1", title:"知識モード", open:true,
+        desc:"覚える練習。AIが出題して、あなたが答える。",
+        body:"あなたは英語の出題者です。"+R.grade+"の単語と基本文を、英→日・日→英・文の空所うめで1問ずつ出してください。私が答えてから次へ。私の弱点："+(diag.weak.join("、")||"特になし")+"。\n"+r },
+      { n:"②", key:"m2", cls:"m2", title:"思考モード", open:true,
+        desc:"答えを言わせず、ヒントだけ。自分で直す。",
+        body:"あなたは英語のコーチです。"+R.grade+"の範囲で短い英作文や並べかえを出し、私がまちがえても<答えを言わず>、どこが変かのヒントだけ出してください。自分で直したら次へ。最後に、何ができて何が課題かを1〜2行で。\n"+r },
+      { n:"③", key:"m3", cls:"m3", title:"議論モード", open:false,
+        desc:"答えが一つでない問い。立場と根拠と反論。",
+        body:"あなたは英語ディベートの相手です。"+R.grade+"の範囲のやさしい英語で、賛否が分かれる身近なテーマ（例：制服・スマホ・宿題）を1つ。あなたは賛成と反対の両方の理由を出す。私はどちらかの立場で英語で根拠を言う。あなたは<やさしく反論>して、私に再反論させて。正解は決めつけない。\n"+r },
+      { n:"④", key:"m4", cls:"m4", title:"探求モード（エコースキャン）", open:false,
+        desc:"AIも答えを持たない。ひっかかりを一緒にさがす。",
+        body:"あなたは探究のパートナーです。答えは教えません。私が選んだトピックについて、私の考えの<ひっかかる所・もやっとする所>を一緒に見つけ、「まだ誰もはっきり答えていないかもしれない問い」を一緒に立ててください。英語が難しければ日本語と混ぜてよい。\n"+r },
+      { n:"⑤", key:"m5", cls:"m5", title:"フリーパス（自分で設計）", open:false,
+        desc:"あなたが設計者。下のチェックでプロンプトを自作。",
+        body:"" } // ⑤ は本人が書く
+    ];
+  }
+
+  /* ---- 英検二次面接プロンプト（谷本杏の例の改良版を③枠に同梱） ---- */
+  function interviewPrompt(diag){
+    var R=rangeFor(diag.L);
+    return "あなたは英検"+R.grade+"の二次面接の試験官です。\n"
+      +"・本番形式で行う。途中で間違いを指摘しない。日本語は使わない。\n"
+      +"・軽い挨拶→カード内容（文章＋イラストの説明）を文字で提示→20秒黙読→音読→No.1〜No.4の質問、の順。\n"
+      +"・私が答えてから次の問題へ。先の問題を先に出さない。\n"
+      +"・全問おわったら日本語で評価する。評価項目は〔質問への答え方／文法／語彙／理由の具体性／発音の聞き取りやすさ〕の5つ。\n"
+      +"・最後に、次回練習すべき表現を3つ出す。";
+  }
+
+  /* ---- レンダリング（ゲート：知識=常時／思考=80%or先生／議論・探求・FP=先生） ---- */
+  var unlocked=false;
+  function modeIsOpen(m,diag){
+    if(m.key==="m1") return true;
+    if(m.key==="m2") return diag.knowSolid || unlocked;
+    return unlocked;
+  }
+  function modeBadge(m,diag,isOpen){
+    if(m.key==="m1") return '<span class="badge open">いつでも</span>';
+    if(m.key==="m2") return isOpen
+        ? '<span class="badge open">'+(diag.knowSolid?'80%達成':'先生が開放')+'</span>'
+        : '<span class="badge gate">80%で開く</span>';
+    return isOpen ? '<span class="badge open">先生が開放</span>' : '<span class="badge gate">先生ゲート</span>';
+  }
+  function modeLock(m){
+    if(m.key==="m2") return '🔒 単語テスト80%以上（中2か中3）または英検3級で開きます（先生モードでも開けます）。';
+    return '🔒 先生モードで開きます。';
+  }
+  function renderModes(diag){
+    var arr=buildPrompts(diag), host=$("modes"); host.innerHTML="";
+    arr.forEach(function(m){
+      var isOpen=modeIsOpen(m,diag);
+      var card=document.createElement("div");
+      card.className="card mode "+m.cls+(isOpen?"":" locked");
+      var inner='<h2><span class="emoji">'+m.n+'</span>'+m.title+modeBadge(m,diag,isOpen)+'</h2>'
+              +'<p class="desc">'+m.desc+'</p>';
+      if(!isOpen){
+        inner+='<div class="locknote">'+modeLock(m)+'</div>';
+      } else if(m.key==="m5"){
+        inner+='<ul class="checklist">'
+          +'<li>AIにどんな<b>役</b>をさせる？（コーチ／試験官／相手）</li>'
+          +'<li>今日の<b>目的</b>は？（覚える／使う／話す／考える）</li>'
+          +'<li>使う<b>範囲</b>は？（級・単元・語彙・文法）</li>'
+          +'<li><b>助け方</b>は？（答えを言わない／ヒントだけ／最後に評価）</li>'
+          +'<li><b>本番</b>か<b>練習</b>か？（途中で止める？まとめて評価？）</li></ul>'
+          +'<textarea class="pt" id="pt_'+m.key+'" placeholder="上のチェックをヒントに、自分の練習プロンプトを書こう。">'
+          +'あなたは（役）です。（目的）の練習をします。範囲は（級・単元）。'
+          +'（助け方の指定）。最後に（評価の指定）。</textarea>'
+          +'<div class="row"><button class="btn" data-copy="pt_'+m.key+'">コピー</button>'
+          +'<span class="copied" id="copied_pt_'+m.key+'"></span></div>';
+      } else {
+        var body=m.body;
+        if(m.key==="m3"){ body+="\n\n――― 英検二次面接で練習したいとき（コピーして使う）―――\n"+interviewPrompt(diag); }
+        inner+='<textarea class="pt" id="pt_'+m.key+'" readonly>'+body+'</textarea>'
+          +'<div class="row"><button class="btn" data-copy="pt_'+m.key+'">コピー</button>'
+          +'<span class="copied" id="copied_pt_'+m.key+'"></span></div>';
+      }
+      card.innerHTML=inner;
+      host.appendChild(card);
+    });
+    bindCopy();
+  }
+
+  function renderDiag(D,diag){
+    $("d_level").textContent = diag.L!=null ? rangeFor(diag.L).label : "まだ記録なし";
+    $("d_eiken").textContent = diag.L!=null ? levelLabel(diag.L) : "–";
+    $("d_stage").textContent = diag.stage;
+    $("d_weak").innerHTML = diag.weak.length ? ("いま強くしたい所：<b>"+diag.weak.join("／")+"</b>") : "弱点は記録から見つかりませんでした。まずは知識・思考モードでOK。";
+    $("src_badge").textContent = diag.hasData ? "記録から" : "手動";
+    $("src_badge").className = "badge "+(diag.hasData?"open":"gate");
+  }
+
+  /* ---- コピー ---- */
+  function copyText(t){
+    if(navigator.clipboard&&navigator.clipboard.writeText){ return navigator.clipboard.writeText(t); }
+    return new Promise(function(res,rej){
+      try{var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();
+        document.execCommand("copy");document.body.removeChild(ta);res();}catch(e){rej(e);}
+    });
+  }
+  function bindCopy(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-copy]"),function(b){
+      b.onclick=function(){
+        var el=$(b.getAttribute("data-copy")); if(!el)return;
+        copyText(el.value).then(function(){
+          var m=$("copied_"+b.getAttribute("data-copy")); if(m){m.textContent="コピーしました ✓";
+            setTimeout(function(){m.textContent="";},2000);}
+        });
+      };
+    });
+  }
+
+  /* ---- 送信（隠しフォーム→隠しiframe へPOST：CORS非依存・file://可） ---- */
+  function send(){
+    var msg=$("sendmsg");
+    var cls=$("f_cls").value.trim(), num=han($("f_num").value), raw=$("logBox").value.trim();
+    function err(t){ msg.style.color="#d9603e"; msg.textContent=t; }
+    if(!cls||!num) return err("学年と番号を入れてね");
+    if(!raw)       return err("まとめを貼りつけてね");
+    if(!LOG_GAS_URL) return err("先生へ：送信先(GAS)が未設定です");
+    try{
+      var sink=$("gas_sink");
+      if(!sink){ sink=document.createElement("iframe"); sink.id="gas_sink"; sink.name="gas_sink";
+        sink.style.display="none"; document.body.appendChild(sink); }
+      var f=document.createElement("form");
+      f.method="POST"; f.action=LOG_GAS_URL; f.target="gas_sink"; f.style.display="none";
+      var inp=document.createElement("input"); inp.type="hidden"; inp.name="payload";
+      inp.value=JSON.stringify({kind:"ai_log",ver:APP_VER,cls:cls,num:num,name:$("f_name").value.trim(),
+        level:(curDiag&&curDiag.L!=null?curDiag.L:""),raw:raw});
+      f.appendChild(inp); document.body.appendChild(f); f.submit(); document.body.removeChild(f);
+      msg.style.color="#2e9e57"; msg.textContent="送信しました ✓（スプシのAIログを確認）"; $("logBox").value="";
+    }catch(e){ err("送信できませんでした（"+String(e).slice(0,24)+"）"); }
+  }
+
+  /* ---- 本人情報（マイページと同じキー） ---- */
+  function fillIdentity(){
+    $("f_cls").value=lsGet("mado_year")||"";
+    $("f_num").value=han(lsGet("mado_num")||"");
+    $("f_name").value=lsGet("mado_name")||"";
+  }
+
+  /* ---- 起動 ---- */
+  var D=readData(), curDiag=null;
+  function refresh(){
+    curDiag=diagnose(D, $("manualLv").value?parseFloat($("manualLv").value):null);
+    renderDiag(D,curDiag); renderModes(curDiag);
+  }
+  fillIdentity(); refresh();
+  $("f_cls").addEventListener("change",function(){ lsSet("mado_year",this.value); });
+  $("f_num").addEventListener("input",function(){ this.value=han(this.value); lsSet("mado_num",this.value); });
+  $("f_name").addEventListener("input",function(){ lsSet("mado_name",this.value.trim()); });
+  $("manualLv").addEventListener("change",refresh);
+  $("unlockBtn").addEventListener("click",function(){
+    unlocked=!unlocked;
+    $("unlockMsg").textContent = unlocked?"思考〜フリーパスを開きました ✓":"閉じました";
+    refresh();
+  });
+  $("sendBtn").addEventListener("click",send);
+})();
+</script>
+</body>
+</html>
