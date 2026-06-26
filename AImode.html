@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -68,11 +67,13 @@
   .manual{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:#7a7363}
   .manual select,.manual input{font:inherit;font-size:14px;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:#fffdf6}
   footer{text-align:center;color:#b3ab98;font-size:12px;margin-top:22px}
+  .ailinks{text-align:center;font-size:12.5px;color:#7a7363;margin:2px 0 8px}
+  .ailinks a{color:var(--accent3);font-weight:bold;text-decoration:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="crumbs" style="color:#9a927e">デモ版（記録が無いので「手動でレベルを選ぶ」でお試しください）</div>
+  <div class="crumbs"><a href="../index.html">← トップ</a> ／ <a href="../me/index.html">マイページ</a></div>
   <div class="hero">
     <h1>AI練習メニュー 🧭 <span class="ver" id="ver"></span></h1>
   </div>
@@ -98,6 +99,12 @@
       </select>
     </div>
   </div>
+
+  <div class="ailinks">貼り付け先AI（コピー後に開く）：
+    <a href="https://www.google.com/search?udm=50" target="_blank" rel="noopener">AIモード</a> ・
+    <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a> ・
+    <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a> ・
+    <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a></div>
 
   <!-- モード群 -->
   <div id="modes"></div>
@@ -128,9 +135,11 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="ai 0.6 (phase1)";
+  var APP_VER="ai 0.8 (phase1)";
   // 送信先GASの /exec URL（log_gas.gs をデプロイして貼る。空なら送信オフ）
   var LOG_GAS_URL="https://script.google.com/macros/s/AKfycbzJ2HThmRaf6Okkj682KOlxULwv_uQEtrdwbxCFyqOB5w8yKHa5bRpB9VTCEU3R2bCt/exec";
+  // 「コピーしてAIを開く」で開く既定AI（Google AIモード。必要なら変更）
+  var AI_URL="https://www.google.com/search?udm=50";
   var $=function(id){return document.getElementById(id);};
   $("ver").textContent=APP_VER;
 
@@ -193,35 +202,52 @@
     return     {label:"英検準2+〜2級", grade:"準2級+", grammar:"高校英文法の基礎全般", vocab:"準2級+〜2級の語"};
   }
 
-  /* ---- 共通の制約文（範囲＋摂動原理：範囲外の新例/答えを渡さない） ---- */
-  function rules(R){
-    return "【約束】\n"
-      +"・"+R.grade+"の範囲で。むずかしい範囲外の表現は使わない（必要なら短い説明だけ）。\n"
-      +"・使ってよい文法："+R.grammar+"。\n"
-      +"・教科書に出ていない<新しい例>で出して（暗記の丸写しにせず、その場で考えさせて）。\n"
-      +"・答えをすぐ教えない。まちがえたら「なぜそう考えた？」と問い返して、自分で直させて。\n"
-      +"・むやみにほめない。よい所は具体的に、直す所は一つずつ。\n"
-      +"【切りかえの言葉】「難易度を下げて」「暗記モード」「議論モード」「まとめ」\n"
+  /* ---- 共通の末尾（切りかえ＋まとめ。全モード） ---- */
+  function tail_(){
+    return "【切りかえの言葉】「難易度を下げて」「暗記モード」「議論モード」「まとめ」\n"
       +"【「まとめ」と言われたら】次の8項目で出す（1〜7は今日の会話から記入、8は空欄にして生徒に書かせる）：\n"
       +"1.今日の目的／2.使ったモード／3.途中で変えたモード／4.使えた単語・文法／5.難しかったこと／6.次回やること／7.AI活用レベルの自己評価(知識/思考/議論/探求)／8.今日の振り返り(生徒が記入)";
+  }
+  /* ---- 英語練習モード(知識/思考/議論)：約束＋ノイズ抑制 ---- */
+  function engRules_(R){
+    return "【約束（必ず守る）】\n"
+      +"・前置き・確認をせず、すぐ問題から始める。手順やレベルの確認（メタ質問）はしない。\n"
+      +"・一度に1問。私が答えてから次へ。\n"
+      +"・基本は英語で進める。日本語の長い解説や訳は出さない（詰まった時だけ短いヒントを日本語で1行）。\n"
+      +"・"+R.grade+"の範囲。範囲外の難しい表現は使わない。使ってよい文法："+R.grammar+"。\n"
+      +"・教科書に無い<新しい例>で出す（丸写しにせず、その場で考えさせる）。\n"
+      +"・答えをすぐ教えない。間違えたら「なぜそう考えた？」と問い返し、自分で直させる。\n"
+      +"・むやみにほめない。直す所は一つずつ。\n"
+      +tail_();
+  }
+  /* ---- 探求モード(④)：日本語で自由対話。英語力でなく探究力を鍛える ---- */
+  function inqRules_(){
+    return "【約束（必ず守る）】\n"
+      +"・日本語で自由に対話する。これは英語練習ではなく『探究力』を鍛えるモード。\n"
+      +"・専門用語・キーワードだけ日英併記する（例：光合成 (photosynthesis)）。他は日本語でよい。\n"
+      +"・前置き・手順確認（メタ質問）はしない。私がトピックを言ったら、すぐ深掘りを始める。\n"
+      +"・答えを教えない。私の考えの<ひっかかり・前提・とびはね・反例>を一緒に掘る。\n"
+      +"・『なぜ？』『本当に？』『他の見方は？』『何が分かれば決まる？』で深める。\n"
+      +"・最後に『まだ誰もはっきり答えていないかもしれない問い』を一緒に立てる。\n"
+      +tail_();
   }
 
   /* ---- 5モードのプロンプト生成（Paper A） ---- */
   function buildPrompts(diag){
-    var R=rangeFor(diag.L), r=rules(R);
+    var R=rangeFor(diag.L), eng=engRules_(R), inq=inqRules_();
     return [
       { n:"①", key:"m1", cls:"m1", title:"知識モード", open:true,
         desc:"覚える練習。AIが出題して、あなたが答える。",
-        body:"あなたは英語の出題者です。"+R.grade+"の単語と基本文を、英→日・日→英・文の空所うめで1問ずつ出してください。私が答えてから次へ。私の弱点："+(diag.weak.join("、")||"特になし")+"。\n"+r },
+        body:"あなたは英語の出題者です。"+R.grade+"の単語と基本文を、英→日・日→英・文の空所うめで1問ずつ出してください。私の弱点："+(diag.weak.join("、")||"特になし")+"。\n"+eng },
       { n:"②", key:"m2", cls:"m2", title:"思考モード", open:true,
         desc:"答えを言わせず、ヒントだけ。自分で直す。",
-        body:"あなたは英語のコーチです。"+R.grade+"の範囲で短い英作文や並べかえを出し、私がまちがえても<答えを言わず>、どこが変かのヒントだけ出してください。自分で直したら次へ。最後に、何ができて何が課題かを1〜2行で。\n"+r },
+        body:"あなたは英語のコーチです。"+R.grade+"の範囲で短い英作文や並べかえを出し、私がまちがえても<答えを言わず>、どこが変かのヒントだけ出してください。\n"+eng },
       { n:"③", key:"m3", cls:"m3", title:"議論モード", open:false,
         desc:"答えが一つでない問い。立場と根拠と反論。",
-        body:"あなたは英語ディベートの相手です。"+R.grade+"の範囲のやさしい英語で、賛否が分かれる身近なテーマ（例：制服・スマホ・宿題）を1つ。あなたは賛成と反対の両方の理由を出す。私はどちらかの立場で英語で根拠を言う。あなたは<やさしく反論>して、私に再反論させて。正解は決めつけない。\n"+r },
+        body:"あなたは英語ディベートの相手です。"+R.grade+"のやさしい英語で、賛否が分かれる身近なテーマ（例：制服・スマホ・宿題）を1つ。あなたは賛成と反対の両方の理由を出し、私の立場に<やさしく反論>して、再反論させてください。正解は決めつけない。\n"+eng },
       { n:"④", key:"m4", cls:"m4", title:"探求モード（エコースキャン）", open:false,
-        desc:"AIも答えを持たない。ひっかかりを一緒にさがす。",
-        body:"あなたは探究のパートナーです。答えは教えません。私が選んだトピックについて、私の考えの<ひっかかる所・もやっとする所>を一緒に見つけ、「まだ誰もはっきり答えていないかもしれない問い」を一緒に立ててください。英語が難しければ日本語と混ぜてよい。\n"+r },
+        desc:"日本語でOK。AIも答えを持たず問いを深める（英語より探究力）。",
+        body:"あなたは探究のパートナーです。\n"+inq },
       { n:"⑤", key:"m5", cls:"m5", title:"フリーパス（自分で設計）", open:false,
         desc:"あなたが設計者。下のチェックでプロンプトを自作。",
         body:"" } // ⑤ は本人が書く
@@ -277,19 +303,21 @@
           +'<textarea class="pt" id="pt_'+m.key+'" placeholder="上のチェックをヒントに、自分の練習プロンプトを書こう。">'
           +'あなたは（役）です。（目的）の練習をします。範囲は（級・単元）。'
           +'（助け方の指定）。最後に（評価の指定）。</textarea>'
-          +'<div class="row"><button class="btn" data-copy="pt_'+m.key+'">コピー</button>'
+          +'<div class="row"><button class="btn" data-open="pt_'+m.key+'">📋コピーしてAIを開く</button>'
+          +'<button class="btn ghost" data-copy="pt_'+m.key+'">コピーだけ</button>'
           +'<span class="copied" id="copied_pt_'+m.key+'"></span></div>';
       } else {
         var body=m.body;
         if(m.key==="m3"){ body+="\n\n――― 英検二次面接で練習したいとき（コピーして使う）―――\n"+interviewPrompt(diag); }
         inner+='<textarea class="pt" id="pt_'+m.key+'" readonly>'+body+'</textarea>'
-          +'<div class="row"><button class="btn" data-copy="pt_'+m.key+'">コピー</button>'
+          +'<div class="row"><button class="btn" data-open="pt_'+m.key+'">📋コピーしてAIを開く</button>'
+          +'<button class="btn ghost" data-copy="pt_'+m.key+'">コピーだけ</button>'
           +'<span class="copied" id="copied_pt_'+m.key+'"></span></div>';
       }
       card.innerHTML=inner;
       host.appendChild(card);
     });
-    bindCopy();
+    bindCopy(); bindOpen();
   }
 
   function renderDiag(D,diag){
@@ -316,6 +344,18 @@
         copyText(el.value).then(function(){
           var m=$("copied_"+b.getAttribute("data-copy")); if(m){m.textContent="コピーしました ✓";
             setTimeout(function(){m.textContent="";},2000);}
+        });
+      };
+    });
+  }
+  function bindOpen(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-open]"),function(b){
+      b.onclick=function(){
+        var el=$(b.getAttribute("data-open")); if(!el)return;
+        try{ window.open(AI_URL,"_blank","noopener"); }catch(e){}   // 先にAIを開く(ポップアップ許可のため同期)
+        copyText(el.value).then(function(){
+          var m=$("copied_"+b.getAttribute("data-open")); if(m){m.textContent="コピー済 → 開いたAIに貼り付け(Ctrl+V)";
+            setTimeout(function(){m.textContent="";},3500);}
         });
       };
     });
