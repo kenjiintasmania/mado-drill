@@ -198,7 +198,7 @@
 <script>
 "use strict";
 /* ---------- 設定 ---------- */
-var APP_VER="karte 0.21 (phase1)";
+var APP_VER="karte 0.22 (phase1)";
 var LOG_GAS_URL="https://script.google.com/macros/s/AKfycbw6GODXQM0HZtYvaxoO61jKOMwqQe9ZYxNJTVLBARBJ-hvWUU8Tw7KVelRKq2wGOHgdrA/exec";
 var AI_URL="https://www.google.com/search?udm=50";
 const KEY="tanqKarte_v0";                      // v0.1と同じキー＝既存データ温存
@@ -300,8 +300,10 @@ function voiceCalc(layers){
   let lvl="—"; for(const k of ["探","議","思","知"]){ if(layers[k].length){ lvl=names[k]; break; } }
   return {score:sc, level:lvl, covered:covered.length, moves:mv, utter:all.length, all};
 }
-/* バッジ：三重一致 > 見抜いた(差4+) > 自己較正 > 甘め/厳しめ */
-function judge(ai,self,voice){
+/* バッジ：三重一致 > 見抜いた(差4+) > 自己較正 > 甘め/厳しめ。声の記録0なら判定しない（金バッジの誤発火防止） */
+function judge(ai,self,v){
+  if(!v || !v.utter) return {cls:"note",name:"判定不能（声の記録なし）",note:"9・10入りの「まとめ」でないと照合できない。数字だけでは判定しない。"};
+  const voice=v.score;
   const dS=Math.abs(self-voice), dA=(ai==null)?null:Math.abs(ai-voice);
   if(ai!=null && dS<=1 && dA<=1) return {cls:"gold",name:"🏅 三重一致",note:"AI・きみ・声の3つがそろった。今日の評価は本物。"};
   if(ai!=null && dS<=1 && (ai-voice)>=MITSUKE_GAP) return {cls:"find",name:"🔎 迎合を見抜いた",note:"AIは声の記録より "+(ai-voice)+" 点ぶん多めに言っていた。きみの目は正確。"};
@@ -341,7 +343,7 @@ function renderAll(){
   const recent=S.ends.filter(t=>now-t<WINDOW_MIN*60000);
   $("sesCount").textContent=Math.min(recent.length,2);
   if(ss.length){
-    const c=ss[ss.length-1], b=judge(c.ai,c.self,c.voice.score);
+    const c=ss[ss.length-1], b=judge(c.ai,c.self,c.voice);
     $("latestBody").innerHTML=
       '<div class="tiles">'+
       '<div class="tile"><div class="lab">AIの見立て</div><div class="val">'+starsHtml(c.ai,c.aiConv)+'</div></div>'+
@@ -451,7 +453,7 @@ $("btnSend").addEventListener("click",()=>{
     self, theme, ai:(ai.score==null?"":ai.score), voice:v.score, vlevel:v.level,
     demo:v.moves.demo, naze:v.moves.naze, tato:v.moves.tato, meigen:p.meigen, raw });
   renderAll();
-  const b=judge(rec.ai,rec.self,rec.voice.score);
+  const b=judge(rec.ai,rec.self,rec.voice);
   $("simResult").innerHTML='<div class="panel">照合しました → <b>'+b.name+"</b>。下の「今日の照合」に反映。"+
     (sent?"　送信しました ✓（応答は「先生用」▼で確認）":"　<b>送信オフ（GAS未設定）</b>＝カルテのみ更新")+
     (v.utter===0?"<br><b>声の記録が0でした。</b>まとめに 9・10 が入っているか確認してください。":"")+"</div>";
