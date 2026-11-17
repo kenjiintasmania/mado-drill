@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5分チャレンジ</title>
+<!--
+  5分チャレンジ v0.1 ／ 単一HTML。
+  ★これは訓練アプリであって、点をつける道具ではない。
+    記録しない・送信しない・スコアを出さない。ゴールは「5分、止まらずに続ける」こと。
+  ★止まる原因は語彙切れではなく「次の一手が出てこない」こと。
+    だから手札を常に画面に置く。見ていい。見ながらでも止まらなければ勝ち。
+  ★いちばん上に「とまりそうなとき」を置いてある。
+    黙るのと "Let me see..." と言うのは別物で、後者なら会話は死なない。
+-->
+<style>
+  :root{ --ink:#1f2430; --sub:#5a6473; --line:#dfe4ec; --em:#1f6d4a; --hot:#c2410c; --bg:#f6f9f7; }
+  *{box-sizing:border-box}
+  body{ margin:0; background:var(--bg); color:var(--ink);
+        font-family:"Noto Sans CJK JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+        font-size:16px; line-height:1.55; }
+  .wrap{ max-width:860px; margin:0 auto; padding:12px 12px 40px; }
+  header{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  h1{ font-size:21px; margin:0; } h1 small{ font-size:12px; color:var(--sub); font-weight:normal; }
+
+  /* ── タイマー ── */
+  .timer{ position:sticky; top:0; z-index:9; background:var(--bg); padding:8px 0 10px; border-bottom:2px solid var(--line); }
+  .clock{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .big{ font-size:54px; font-weight:800; letter-spacing:2px; font-variant-numeric:tabular-nums;
+        color:var(--em); line-height:1; min-width:150px; }
+  .big.warn{ color:var(--hot); }
+  .big.done{ color:var(--em); }
+  .bar{ height:10px; background:#e3e9e4; border-radius:6px; overflow:hidden; flex:1 1 160px; min-width:120px; }
+  .bar i{ display:block; height:100%; width:100%; background:var(--em); transition:width .25s linear; }
+  .bar i.warn{ background:var(--hot); }
+  .say{ font-size:14.5px; color:var(--sub); margin-top:5px; min-height:22px; }
+  .say b{ color:var(--hot); }
+
+  button{ font:inherit; font-size:15px; padding:9px 15px; border-radius:9px;
+          border:1.5px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+  button.p{ background:var(--em); border-color:var(--em); color:#fff; font-weight:bold; }
+  button.h{ background:var(--hot); border-color:var(--hot); color:#fff; font-weight:bold; }
+  .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+
+  /* ── 手札 ── */
+  .deck{ margin-top:12px; }
+  .grp{ background:#fff; border:1px solid var(--line); border-radius:12px; margin-top:10px; overflow:hidden; }
+  .grp > h2{ margin:0; font-size:15px; padding:9px 12px; background:#eef5f1; color:var(--em);
+             display:flex; align-items:center; gap:8px; }
+  .grp > h2 .tag{ font-size:11.5px; color:#fff; background:var(--em); border-radius:20px; padding:1px 9px; }
+  .grp.hot > h2{ background:#fff1e8; color:var(--hot); } .grp.hot > h2 .tag{ background:var(--hot); }
+  .cards{ display:flex; flex-wrap:wrap; gap:7px; padding:10px 12px 12px; }
+  .c{ flex:1 1 230px; border:1.5px solid var(--line); border-radius:9px; padding:7px 10px; background:#fcfdfc; }
+  .c .en{ font-size:16.5px; font-weight:600; }
+  .c .ja{ font-size:12.5px; color:var(--sub); margin-top:1px; }
+  .grp.hot .c{ border-color:#f3cdb6; background:#fffaf7; }
+  .grp.hot .c .en{ color:var(--hot); }
+
+  .box{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-top:12px; }
+  .box h2{ font-size:17px; margin:0 0 6px; color:var(--em); }
+  .hint{ font-size:13.5px; color:var(--sub); }
+  textarea{ width:100%; height:170px; font:inherit; font-size:13px; line-height:1.5;
+            border:1.5px solid var(--line); border-radius:9px; padding:10px; background:#fbfdfc; }
+  .ok{ color:var(--em); font-size:13.5px; }
+  .fin{ background:#eef5f1; border:2px solid var(--em); border-radius:12px; padding:14px; margin-top:12px; text-align:center; }
+  .fin .t{ font-size:24px; font-weight:800; color:var(--em); }
+  .fin .s{ font-size:14px; color:var(--sub); margin-top:4px; }
+  footer{ margin-top:18px; font-size:12.5px; color:var(--sub); border-top:1px solid var(--line); padding-top:10px; }
+
+  .tiles{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .tile{ flex:1 1 150px; border:1.5px solid var(--line); border-radius:10px; padding:8px 10px; background:#fcfdfc; }
+  .tile .lab{ font-size:12.5px; color:var(--sub); }
+  .tile .val{ font-size:26px; font-weight:800; color:var(--em); line-height:1.2; }
+  .tile .val small{ font-size:13px; font-weight:normal; color:var(--sub); margin-left:4px; }
+  .tile.dim .val{ color:var(--sub); font-size:20px; }
+  .next{ margin-top:10px; background:#fff1e8; border:2px solid var(--hot); border-radius:10px; padding:10px 12px; font-size:15px; }
+  .next b{ color:var(--hot); }
+  .next .en{ display:inline-block; background:#fff; border:1.5px solid #f3cdb6; border-radius:7px; padding:1px 8px; margin:3px 4px 0 0; font-weight:600; }
+  .kanaList{ margin-top:8px; font-size:13.5px; background:#fff7ec; border:1.5px solid #e8c9a3; border-radius:9px; padding:7px 10px; color:#5a3a1a; }
+  .flag{ margin-top:8px; font-size:13px; background:#fff4e6; border:1.5px solid #b45309; border-radius:9px; padding:7px 10px; color:#7c3d00; }
+  .formula{ margin-top:10px; font-size:12px; line-height:1.6; color:var(--sub); background:#f7f9f8; border:1px dashed var(--line); border-radius:9px; padding:8px 10px; }
+  .formula b{ color:var(--ink); }
+  body.tight .tile .val{ font-size:21px; } body.tight .formula{ font-size:11px; }
+
+  /* カタカナ容認の案内。知らないと結局かたまるので、タイマーのすぐ下に置く */
+  .kana{ margin-top:6px; font-size:13px; line-height:1.5; color:#5a3a1a;
+         background:#fff7ec; border:1.5px solid #e8c9a3; border-radius:9px; padding:7px 10px; }
+  .kana b{ color:#9a4a0a; } .kana code{ background:#fff; border:1px solid #e8c9a3; border-radius:5px;
+         padding:0 5px; font-size:13px; font-family:inherit; }
+
+  /* 「ぎゅっと表示」＝2画面で左半分に置いたときに、手札が一画面に近づくようにする */
+  body.tight .big{ font-size:36px; min-width:104px; }
+  body.tight .kana{ font-size:12px; padding:5px 8px; }
+  body.tight .say{ font-size:13px; min-height:18px; }
+  body.tight .box{ padding:8px 10px; margin-top:8px; }
+  body.tight .deck{ margin-top:8px; }
+  body.tight .grp{ margin-top:6px; }
+  body.tight .grp > h2{ font-size:13.5px; padding:5px 10px; }
+  body.tight .cards{ gap:5px; padding:6px 8px 8px; }
+  body.tight .c{ flex:1 1 140px; padding:4px 7px; }
+  body.tight .c .en{ font-size:14px; }
+  body.tight .c .ja{ font-size:11px; }
+  body.tight #splitHow, body.tight footer{ display:none; }
+  @media (max-width:520px){ .c{ flex:1 1 100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>5分チャレンジ<small> 英語でしゃべり続ける練習 <span id="ver"></span></small></h1>
+</header>
+
+<div class="timer">
+  <div class="clock">
+    <div class="big" id="clk">5:00</div>
+    <div class="bar"><i id="bar"></i></div>
+    <button class="p" id="btnGo">スタート</button>
+    <button id="btnRe">もどす</button>
+    <button id="btnTight" title="せまい画面でも手札が見えるように詰めます">ぎゅっと表示</button>
+  </div>
+  <div class="say" id="say">ゴールは<b>1つだけ</b>。5分のあいだ、だまらないこと。下の手札は<b>見ていい</b>。</div>
+  <div class="kana"><b>英語のつづりが出てこなくても、止まらなくていい。</b>
+    <code>I like サッカー</code> でも <code>I like sakkaa</code> でも通じます。
+    相手が <b>soccer</b> と言い直して返してくれるので、<b>それを見て次から使えばいい。</b>
+    まちがいは指摘されません。</div>
+</div>
+
+<div class="box">
+  <h2>① 相手を呼び出す</h2>
+  <div class="hint">コピーしてAIにはると、グアテマラの中学生が出てきます。別のタブで開いたまま、この画面の手札を見ながら話します。</div>
+  <div class="row">
+    <button class="p" id="btnSplit">コピーして<b>右半分</b>にAIをひらく</button>
+    <button id="btnCopyOpen">コピーして新しいタブでひらく</button>
+    <button id="btnCopyOnly">コピーだけ</button>
+    <span class="ok" id="msgCopy"></span>
+  </div>
+  <div class="hint" id="splitHow" style="margin-top:6px">
+    <b>2画面にするには。</b>「右半分にAIをひらく」を押したあと、<b>この画面を左半分に寄せます</b>。<br>
+    Windows … この窓をつかんで画面の<b>左はしまでドラッグ</b>（または <b>Windowsキー＋←</b>）／
+    Chromebook … 最大化ボタンを<b>長おし</b>して左を選ぶ／
+    iPad … AIのタブを<b>下のバーから横へドラッグ</b>（Split View）<br>
+    <span style="color:var(--sub)">AIモードはこのページの中には入れられません（Googleが埋め込みを止めているため）。
+    窓を2つ並べるのが、いちばん確実です。</span>
+  </div>
+  <details style="margin-top:8px"><summary style="cursor:pointer;font-size:14px;color:var(--sub)">プロンプトを見る</summary>
+    <textarea id="outPrompt" readonly></textarea></details>
+</div>
+
+<div class="deck" id="deck"></div>
+
+<div class="box" id="secPaste">
+  <h2>② おわったら、ふりかえる</h2>
+  <div class="hint">AIに <b>finish</b>（または <b>おわり</b>）と送ると、自分が言った文だけが並んで出てきます。
+    <b>それをぜんぶコピーして、ここにはります。</b>数えるのはこのアプリです。AIには数えさせません。</div>
+  <textarea id="inLog" style="height:130px;margin-top:8px;background:#fff" placeholder="===== MY LINES =====&#10;1. Hi, I'm Ken.&#10;2. I like サッカー. How about you?&#10;===== END ====="></textarea>
+  <div class="row"><button class="p" id="btnScore">ふりかえりを出す</button><span class="ok" id="msgScore"></span></div>
+</div>
+
+<div class="box" id="secScore" hidden>
+  <h2>③ ふりかえり</h2>
+  <div class="tiles" id="tiles"></div>
+  <div class="next" id="nextMove"></div>
+  <div class="kanaList" id="kanaList" hidden></div>
+  <div class="flag" id="scoreFlag" hidden></div>
+  <div class="formula">
+    <b>数え方（ぜんぶ機械で数えています。初期値・要調整）</b><br>
+    <b>話した量</b>＝自分の文にある英語の語とカタカナ語の数。<b>多ければよい、ではありません。</b>ほとんど0でないかを見るだけ。<br>
+    <b>中身のある語</b>＝I / is / the / like / Really? などを除いた、<b>ちがう語</b>の数（同じ語は1回）。カタカナ語も数えます。<br>
+    <b>質問したターン</b>＝? でおわる文、または Do / What / How などで始まる文があるターンの数。<b>率</b>＝それ ÷ 全ターン。
+    <b>Really? だけの文は あいづちなので数えません。</b><br>
+    <b>2文以上のターン</b>＝1回の発言に文が2つ以上あった回数。<br>
+    <b>次の一手</b>＝質問の率 30%未満 → 2文以上の率 30%未満 → 中身のある語 8未満、の順に見て、最初に当てはまったもの1つ。
+  </div>
+  <div class="row"><button id="btnCopyScore">ふりかえりをコピー</button><span class="ok" id="msgCopyScore"></span></div>
+  <div class="hint" style="margin-top:8px"><b>この数は成績と関係ありません。</b>記録も送信もしていません。<br>
+    <b>楽しかったかどうかは、測っていません。</b>それはここに出ていない、いちばん大事なことです。</div>
+</div>
+
+<div class="fin" id="fin" hidden>
+  <div class="t" id="finT"></div>
+  <div class="s" id="finS"></div>
+  <div class="row" style="justify-content:center">
+    <button class="p" id="btnToScore">ふりかえりへ</button>
+    <button id="btnAgain">もう1回</button></div>
+</div>
+
+<footer>
+  点はつけません。記録もしません。送信もしません。ページを閉じると消えます。<br>
+  <b>手札を見るのは、ずるではありません。</b>見ながらでも止まらなければ、それが今日の勝ちです。<br>
+  AIはまちがいを直しません。通じればいい、という練習です。
+</footer>
+
+</div>
+<script>
+"use strict";
+var APP_VER = "talk5 0.3";
+var AI_URL  = "https://www.google.com/search?udm=50";
+var SEC     = 300;                       /* 5分。本番と同じ長さ */
+var $ = function(id){ return document.getElementById(id); };
+$("ver").textContent = APP_VER;
+
+/* ─────────── 手札 ───────────
+   並び順に意味がある。いちばん上が「とまりそうなとき」。
+   黙るのと "Let me see..." と言うのは別物で、後者なら会話は死なない。
+   いちばん下が「聞き返す」。自分のターンを質問で終えれば、次に喋るのは相手になる。 */
+var DECK = [
+  { t:"とまりそうなとき", tag:"まずこれ", hot:true, c:[
+    ["Let me see...","えーと…"],
+    ["Well...","うーん…"],
+    ["Good question!","いい質問！"],
+    ["How do you say...","なんて言うんだろう…"],
+    ["Sorry, one more time?","ごめん、もう1回？"],
+    ["What does that mean?","それ、どういう意味？"]
+  ]},
+  { t:"じぶんのこと", tag:"", hot:false, c:[
+    ["I'm ( Kenji ). Call me ( Ken ).","（名前）です。（ケン）って呼んで"],
+    ["I'm ( thirteen ) years old.","（13）歳です"],
+    ["I'm a junior high school student.","中学生です"],
+    ["I live in ( Okayama ), Japan.","日本の（岡山）に住んでいます"],
+    ["Nice to meet you!","はじめまして！"]
+  ]},
+  { t:"すきなもの", tag:"", hot:false, c:[
+    ["I like ( soccer ).","（サッカー）が好きです"],
+    ["My favorite ( food ) is ( ramen ).","好きな（食べ物）は（ラーメン）です"],
+    ["I play ( the guitar ).","（ギター）をひきます"],
+    ["I watch ( anime ) every day.","毎日（アニメ）を見ます"],
+    ["I'm not good at ( math ).","（算数）は得意じゃない"]
+  ]},
+  { t:"りゆうを足す", tag:"1文のばす", hot:false, c:[
+    ["Because it's fun.","楽しいから"],
+    ["Because I play it every day.","毎日やってるから"],
+    ["I like it because ( ~ ).","（〜）だから好き"],
+    ["For example, ( ~ ).","たとえば（〜）"]
+  ]},
+  { t:"あいづち", tag:"相手が話したら", hot:false, c:[
+    ["Really?","ほんとに？"],
+    ["Wow!","わあ！"],
+    ["That's nice.","いいね"],
+    ["Cool!","かっこいい！"],
+    ["Me too!","ぼくも！"],
+    ["Same here!","おなじ！"],
+    ["I see.","なるほど"],
+    ["Oh, interesting.","へえ、おもしろい"]
+  ]},
+  { t:"聞き返す", tag:"いちばん大事", hot:true, c:[
+    ["How about you?","きみはどう？"],
+    ["Do you like ( soccer )?","（サッカー）好き？"],
+    ["What's your favorite ( food )?","好きな（食べ物）は？"],
+    ["What do you do after school?","放課後なにしてる？"],
+    ["Tell me about ( Guatemala ).","（グアテマラ）のこと教えて"],
+    ["Is it popular in your country?","きみの国でも人気？"]
+  ]}
+];
+(function(){
+  var h = "";
+  DECK.forEach(function(g){
+    h += '<div class="grp' + (g.hot ? " hot" : "") + '"><h2>' + g.t
+       + (g.tag ? '<span class="tag">' + g.tag + "</span>" : "") + "</h2><div class=\"cards\">";
+    g.c.forEach(function(c){
+      h += '<div class="c"><div class="en">' + c[0] + '</div><div class="ja">' + c[1] + "</div></div>";
+    });
+    h += "</div></div>";
+  });
+  $("deck").innerHTML = h;
+})();
+
+/* ─────────── プロンプト ─────────── */
+function promptText(){
+  return "You are a 13-year-old junior high school student in Guatemala.\n"
++"I am a Japanese junior high school student. We are talking for the first time.\n"
++"\n"
++"[Who you are]\n"
++"・Give yourself a name and stick to it. Tell me your name early.\n"
++"・Have real likes: a sport, a food, a singer, a TV show. Name them.\n"
++"・Sometimes like the same thing I like, so we can say \"Me too!\".\n"
++"\n"
++"[How you talk]\n"
++"・English only. Short, easy English a Japanese junior high student knows.\n"
++"・2 or 3 sentences at a time. Never more.\n"
++"・NEVER correct my English. Not my grammar, not my spelling, not my word choice.\n"
++"  If you understand me, just answer. This is the most important rule.\n"
++"・Never explain grammar. Never praise my English.\n"
++"・Always reply in ENGLISH ONLY. Never write Japanese yourself.\n"
++"  (Katakana FROM ME is fine to read. That is the next section. You still answer in English.)\n"
++"\n"
++"[Katakana and romaji are OK]\n"
++"・Some of my words may be katakana or romaji: サッカー / sakkaa / aisukurimu / basuketto.\n"
++"  That is FINE. Work out what I mean and keep going. Never stop to ask what it is.\n"
++"・In YOUR reply, just use the correct English word naturally, inside your own sentence.\n"
++"  Do NOT point out that I used Japanese. Do NOT say \"the correct word is...\".\n"
++"    me: \"I like サッカー\"  ->  you: \"Oh, you like soccer! I love soccer too. Who is your favorite player?\"\n"
++"    me: \"My favorite food is ラーメン\"  ->  you: \"Ramen! I have never tried it. Is it spicy?\"\n"
++"・If I write a whole sentence in Japanese, understand it and answer in English.\n"
++"  Show the English once in brackets, then move on:  ( You can say: I like soccer. )\n"
++"  Never stop the conversation to teach. One bracket, then keep talking.\n"
++"\n"
++"[The first 2 minutes: help me]\n"
++"・End every turn with a question, so I always have something to answer.\n"
++"・Keep questions easy: name, age, food, sport, music, school.\n"
++"\n"
++"[After that: make me carry it]\n"
++"・Sometimes answer in one short line and DO NOT ask me anything.\n"
++"  Then wait. Let the silence sit. I have to start the next topic.\n"
++"・If I stay quiet, do not rescue me right away. Wait one turn.\n"
++"\n"
++"[If I get stuck]\n"
++"・If I write \"Let me see...\" or \"Sorry, one more time?\", that is fine. Just wait or repeat.\n"
++"・If I ask what a word means, say it again in easier words. Do not use Japanese.\n"
++"\n"
++"[When I write \"finish\" or \"おわり\"]\n"
++"Stop the conversation and output ONLY the block below. No goodbye, no praise, no comment.\n"
++"・One line per turn: each message I sent, exactly as I wrote it (katakana and mistakes included).\n"
++"・Do NOT fix anything. Do NOT count anything. Do NOT add your own lines.\n"
++"\n"
++"===== MY LINES =====\n"
++"1. (my first message)\n"
++"2. (my second message)\n"
++"===== END =====\n"
++"\n"
++"[Start]\n"
++"Say hello and tell me your name. Then ask me mine. Nothing else.";
+}
+$("outPrompt").value = promptText();
+
+/* ─────────── タイマー ─────────── */
+var left = SEC, tid = null, running = false;
+var MARKS = [
+  [240, "まずは名前と年れい。<b>言い終わったら、かならず質問を返す。</b>"],
+  [180, "すきなものを1つ。<b>Because でもう1文のばす。</b>"],
+  [120, "<b>ここから相手が黙ることがある。</b>自分から新しい話題を出す番。"],
+  [60,  "のこり1分。<b>Tell me about Guatemala.</b> で相手にしゃべらせる。"],
+  [20,  "のこり20秒。<b>だまらずに最後まで。</b>"]
+];
+function fmt(s){ return Math.floor(s/60) + ":" + ("0" + (s % 60)).slice(-2); }
+function paint(){
+  $("clk").textContent = fmt(left);
+  var pct = Math.max(0, left / SEC * 100);
+  $("bar").style.width = pct + "%";
+  var hot = left <= 60 && left > 0;
+  $("clk").className  = "big" + (hot ? " warn" : "");
+  $("bar").className  = hot ? "warn" : "";
+}
+function tick(){
+  left--;
+  if (left <= 0) { left = 0; paint(); stop(true); return; }
+  paint();
+  for (var i = 0; i < MARKS.length; i++) {
+    if (left === MARKS[i][0]) { $("say").innerHTML = MARKS[i][1]; break; }
+  }
+}
+function start(){
+  if (running) { stop(false); return; }
+  running = true; $("btnGo").textContent = "ストップ"; $("btnGo").className = "h";
+  $("fin").hidden = true;
+  $("say").innerHTML = "はじめ！　<b>手札は見ていい。</b>だまらないことだけ考える。";
+  tid = setInterval(tick, 1000);
+}
+function stop(finished){
+  running = false; clearInterval(tid); tid = null;
+  $("btnGo").textContent = "スタート"; $("btnGo").className = "p";
+  if (finished) {
+    $("clk").className = "big done";
+    $("finT").textContent = "5分、やりきった";
+    $("finS").innerHTML = "手札を見ていても、だまらなければ勝ちです。<br>"
+      + "AIに <b>finish</b> と送って、出てきたものを<b>②にはる</b>と、ふりかえりが出ます。";
+    $("fin").hidden = false;
+    $("say").innerHTML = "おつかれさま。";
+  } else {
+    $("say").innerHTML = "とめました。「スタート」でつづきから。「もどす」で5:00にもどります。";
+  }
+}
+function reset(){
+  clearInterval(tid); tid = null; running = false; left = SEC;
+  $("btnGo").textContent = "スタート"; $("btnGo").className = "p";
+  $("fin").hidden = true; paint();
+  $("say").innerHTML = "ゴールは<b>1つだけ</b>。5分のあいだ、だまらないこと。下の手札は<b>見ていい</b>。";
+}
+paint();
+$("btnGo").addEventListener("click", start);
+$("btnRe").addEventListener("click", reset);
+$("btnAgain").addEventListener("click", function(){ reset(); window.scrollTo({ top:0, behavior:"smooth" }); });
+
+/* ─────────── ふりかえり ───────────
+   AIには<書き写し>だけさせる。数えるのはここ。AIの申告は使わない。
+   しきい値は初期値（要調整）。式は画面に全部出してある。 */
+var Q_RATE = 0.30, MULTI_RATE = 0.30, INFO_MIN = 8;
+var SEP5 = /^\s*[=＝]{3,}\s*(.*?)\s*[=＝]{3,}\s*$/;
+var FILLER = [/let me see/gi, /good question/gi, /how do you say/gi, /one more time/gi,
+              /what does that mean/gi, /how about you/gi, /nice to meet you/gi, /same here/gi, /i see/gi];
+var STOP = {};
+("i i'm im i've ive i'd id me my mine you your you're youre he she it it's its we they them our us " +
+ "a an the this that these those is am are was were be been do does did don't dont doesn't doesnt didn't didnt " +
+ "can can't cant will would to of in on at for with from by about as and but or so if then than " +
+ "very too really just also not no yes yeah yep ok okay oh ah wow hi hello hey bye well hmm mmm um uh " +
+ "let see lets let's like likes have has had got get there here what who when where why how which " +
+ "sorry please thanks thank nice cool great good interesting same sure maybe think because example " +
+ "say says said mean means question tell every call").split(" ").forEach(function(w){ STOP[w] = 1; });
+var QSTART = /^(do|does|did|are|is|am|was|were|can|could|will|would|what|who|whose|where|when|why|how|which)\b/i;
+
+function looksLikePrompt5(s){ return /13-year-old junior high school student in Guatemala/.test(s) || /\[Who you are\]/.test(s); }
+
+function parseLog(raw){
+  var lines = String(raw == null ? "" : raw).replace(/\r/g, "").split("\n");
+  var inBlock = false, sawBlock = false, turns = [];
+  var clean = function(l){ return l.replace(/^\s*(?:[0-9０-９]+\s*[.．)）:：]|[・\-–—*])\s*/, "").trim(); };
+  lines.forEach(function(line){
+    var m = line.match(SEP5);
+    if (m) {
+      if (/MY\s*LINES|言ったこと|いったこと/i.test(m[1])) { inBlock = true; sawBlock = true; }
+      else if (/END|ここまで|おわり/i.test(m[1])) { inBlock = false; }
+      return;
+    }
+    if (inBlock) { var s = clean(line); if (s && !/^\(my .* message\)$/i.test(s)) turns.push(s); }
+  });
+  if (!sawBlock) {   /* 見出しが無い：英字かカタカナのある行を全部ひろう（AIの文もまじる） */
+    lines.forEach(function(line){ var s = clean(line); if (s && /[A-Za-zァ-ヶ]/.test(s)) turns.push(s); });
+  }
+  return { turns: turns, sawBlock: sawBlock };
+}
+function sentencesOf(turn){
+  return turn.split(/[.!?。！？]+/).map(function(x){ return x.trim(); })
+             .filter(function(x){ return /[A-Za-zァ-ヶ0-9]/.test(x); });
+}
+var REACT_ONLY = /^(really|oh|ah|wow|yes|yeah|no|ok|okay|huh|eh|me too|same here|cool|nice)$/i;
+function isQuestionTurn(turn){
+  var parts = turn.match(/[^.!?。！？]+[.!?。！？]*/g) || [];
+  return parts.some(function(part){
+    var body = part.replace(/[.!?。！？]+$/, "").replace(/^[\s,、]+|[\s,、]+$/g, "");
+    if (!/[A-Za-zァ-ヶ0-9]/.test(body)) return false;
+    if (REACT_ONLY.test(body)) return false;              /* "Really?" だけは あいづち */
+    if (/[?？]\s*$/.test(part)) return true;
+    return QSTART.test(body) || /\b(and|how about) you$/i.test(body);
+  });
+}
+function scoreLog(raw){
+  var P = parseLog(raw), turns = P.turns;
+  var words = 0, chars = 0, info = {}, kana = {}, qTurns = 0, multi = 0;
+  turns.forEach(function(turn){
+    chars += turn.replace(/\s/g, "").length;
+    var en = turn.match(/[A-Za-z][A-Za-z']*/g) || [];
+    var ka = turn.match(/[ァ-ヶー]{2,}/g) || [];
+    var nums = turn.match(/[0-9]+/g) || [];
+    words += en.length + ka.length + nums.length;
+    var body = turn; FILLER.forEach(function(re){ body = body.replace(re, " "); });
+    (body.match(/[A-Za-z][A-Za-z']*/g) || []).forEach(function(w){
+      var k = w.toLowerCase().replace(/^'+|'+$/g, "").replace(/(n't|'s|'re|'m|'ve|'d|'ll)$/, "");
+      if (k.length > 1 && !STOP[k]) info[k] = 1; });
+    ka.forEach(function(w){ info[w] = 1; kana[w] = 1; });
+    nums.forEach(function(w){ info[w] = 1; });
+    if (isQuestionTurn(turn)) qTurns++;
+    if (sentencesOf(turn).length >= 2) multi++;
+  });
+  var n = turns.length;
+  return { n:n, words:words, chars:chars, info:Object.keys(info).length, infoList:Object.keys(info),
+           kana:Object.keys(kana), q:qTurns, qRate:(n ? qTurns/n : 0),
+           multi:multi, multiRate:(n ? multi/n : 0), sawBlock:P.sawBlock };
+}
+function nextMove(s){
+  if (s.n < 3) return ["まず<b>3回以上</b>やりとりしてみる。", ["Hi, I'm ( Ken ).", "Nice to meet you!"]];
+  if (s.qRate < Q_RATE)     return ["言い終わったら、<b>質問でおわる</b>。次に話すのは相手になります。", ["How about you?", "Do you like ( soccer )?"]];
+  if (s.multiRate < MULTI_RATE) return ["1文でおわらせず、<b>もう1文たす</b>。", ["Because it's fun.", "For example, ( ~ )."]];
+  if (s.info < INFO_MIN)    return ["<b>すきなものを2つ</b>言ってみる。中身がふえます。", ["I like ( soccer ).", "My favorite ( food ) is ( ramen )."]];
+  return ["3つともできています。次は<b>手札を見る回数を1つへらす</b>。", []];
+}
+var lastScoreText = "";
+function renderScore(){
+  var raw = $("inLog").value;
+  if (!raw.trim()) { $("msgScore").textContent = "まだ何もはっていません"; return; }
+  if (looksLikePrompt5(raw)) {
+    $("msgScore").textContent = "それは①のプロンプトです。AIに finish と送って、出てきたほうをはってください"; return; }
+  var s = scoreLog(raw), pct = function(x){ return Math.round(x * 100); };
+  $("tiles").innerHTML =
+      '<div class="tile"><div class="lab">中身のある語（ちがう語の数）</div><div class="val">' + s.info + '</div></div>'
+    + '<div class="tile"><div class="lab">質問したターン</div><div class="val">' + s.q + '<small>／' + s.n + ' ターン（' + pct(s.qRate) + '%）</small></div></div>'
+    + '<div class="tile"><div class="lab">2文以上のターン</div><div class="val">' + s.multi + '<small>／' + s.n + ' ターン</small></div></div>'
+    + '<div class="tile dim"><div class="lab">話した量（目標にはしません）</div><div class="val">' + s.words + ' 語<small>' + s.chars + ' 文字</small></div></div>';
+  var nm = nextMove(s);
+  $("nextMove").innerHTML = "<b>次の一手：</b>" + nm[0]
+    + (nm[1].length ? "<br>" + nm[1].map(function(e){ return '<span class="en">' + e + "</span>"; }).join("") : "");
+  if (s.kana.length) {
+    $("kanaList").hidden = false;
+    $("kanaList").innerHTML = "<b>カタカナで言った語：</b>" + s.kana.join("、")
+      + "　→ 相手が英語で言い直してくれていたはず。<b>次はそれを使ってみる。</b>（止まらなかったので、これで正解です）";
+  } else { $("kanaList").hidden = true; }
+  var flags = [];
+  if (!s.sawBlock) flags.push("「===== MY LINES =====」が見つからなかったので、<b>はられた文ぜんぶ</b>から数えました。AIの文もまじっていて、数が多めに出ているかもしれません。");
+  if (s.n === 0)   flags.push("自分の文が1つも読み取れませんでした。AIに finish と送って、出てきたものをはってください。");
+  $("scoreFlag").hidden = !flags.length; $("scoreFlag").innerHTML = flags.join("<br>");
+  lastScoreText = "5分チャレンジ ふりかえり（" + APP_VER + "）\n"
+    + "中身のある語：" + s.info + "\n"
+    + "質問したターン：" + s.q + "／" + s.n + "（" + pct(s.qRate) + "%）\n"
+    + "2文以上のターン：" + s.multi + "／" + s.n + "\n"
+    + "話した量：" + s.words + " 語（" + s.chars + " 文字）※目標にはしません\n"
+    + (s.kana.length ? "カタカナで言った語：" + s.kana.join("、") + "\n" : "")
+    + "次の一手：" + nm[0].replace(/<[^>]+>/g, "") + (nm[1].length ? "　" + nm[1].join(" / ") : "") + "\n"
+    + (flags.length ? "注意：" + flags.join(" ").replace(/<[^>]+>/g, "") + "\n" : "")
+    + "※この数は成績と関係ありません。楽しかったかどうかは測っていません。";
+  $("secScore").hidden = false; $("msgScore").textContent = "";
+  $("secScore").scrollIntoView({ behavior:"smooth", block:"start" });
+}
+$("btnScore").addEventListener("click", renderScore);
+$("btnToScore").addEventListener("click", function(){ $("secPaste").scrollIntoView({ behavior:"smooth", block:"start" }); });
+$("btnCopyScore").addEventListener("click", function(){
+  copyText(lastScoreText).then(function(){ $("msgCopyScore").textContent = "コピーしました"; })
+    .catch(function(){ $("msgCopyScore").textContent = "コピーできませんでした"; });
+});
+
+/* ─────────── コピー ─────────── */
+function copyText(t){
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+  return new Promise(function(res, rej){
+    try { var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta);
+      ta.select(); document.execCommand("copy"); document.body.removeChild(ta); res(); }
+    catch(e){ rej(e); }
+  });
+}
+$("btnCopyOpen").addEventListener("click", function(){
+  copyText(promptText()).then(function(){
+    $("msgCopy").textContent = "コピーしました"; window.open(AI_URL, "_blank", "noopener");
+  }).catch(function(){ $("msgCopy").textContent = "コピーできませんでした。「プロンプトを見る」から手でえらんでください"; });
+});
+
+/* 右半分にAIを開く。ポップアップを画面の右半分の位置とサイズで出す。
+   ブラウザに止められたら、ふつうのタブで開いてそう伝える（止めない）。 */
+function openRight(){
+  var w = Math.max(480, Math.floor((screen.availWidth || 1280) / 2));
+  var h = Math.max(480, (screen.availHeight || 800));
+  var x = (screen.availLeft || 0) + ((screen.availWidth || 1280) - w);
+  var y = (screen.availTop  || 0);
+  var win = null;
+  try {
+    win = window.open(AI_URL, "aiRight",
+      "popup=yes,noopener,width=" + w + ",height=" + h + ",left=" + x + ",top=" + y);
+  } catch(e){ win = null; }
+  if (win) {
+    $("msgCopy").textContent = "コピーして右半分にひらきました";
+    document.body.classList.add("tight"); $("btnTight").textContent = "ふつうの表示";
+    $("say").innerHTML = "この画面を<b>左半分</b>に寄せてください。やり方は上に書いてあります。";
+    return true;
+  }
+  window.open(AI_URL, "_blank", "noopener");
+  $("msgCopy").textContent = "新しいタブでひらきました（この画面を左に寄せてください）";
+  return false;
+}
+$("btnSplit").addEventListener("click", function(){
+  copyText(promptText()).then(openRight).catch(function(){
+    openRight(); $("msgCopy").textContent = "ひらきました（コピーは「プロンプトを見る」から手でどうぞ）";
+  });
+});
+$("btnTight").addEventListener("click", function(){
+  var on = document.body.classList.toggle("tight");
+  $("btnTight").textContent = on ? "ふつうの表示" : "ぎゅっと表示";
+});
+$("btnCopyOnly").addEventListener("click", function(){
+  copyText(promptText()).then(function(){ $("msgCopy").textContent = "コピーしました"; })
+    .catch(function(){ $("msgCopy").textContent = "コピーできませんでした。「プロンプトを見る」から手でえらんでください"; });
+});
+</script>
+</body>
+</html>
