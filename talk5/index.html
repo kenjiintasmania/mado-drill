@@ -55,6 +55,11 @@
   .c .ja{ font-size:12.5px; color:var(--sub); margin-top:1px; }
   .grp.hot .c{ border-color:#f3cdb6; background:#fffaf7; }
   .grp.hot .c .en{ color:var(--hot); }
+  /* 質問のはじめかた：数が多いので細かく並べる */
+  .grp.dense .c{ flex:1 1 170px; padding:5px 9px; }
+  .grp.dense .c .en{ font-size:15.5px; }
+  .grp.dense .c .ja{ font-size:11.5px; }
+  body.tight .grp.dense .c{ flex:1 1 128px; }
 
   .box{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-top:12px; }
   .box h2{ font-size:17px; margin:0 0 6px; color:var(--em); }
@@ -194,7 +199,7 @@
 </div>
 <script>
 "use strict";
-var APP_VER = "talk5 0.3";
+var APP_VER = "talk5 0.4";
 var AI_URL  = "https://www.google.com/search?udm=50";
 var SEC     = 300;                       /* 5分。本番と同じ長さ */
 var $ = function(id){ return document.getElementById(id); };
@@ -212,6 +217,23 @@ var DECK = [
     ["How do you say...","なんて言うんだろう…"],
     ["Sorry, one more time?","ごめん、もう1回？"],
     ["What does that mean?","それ、どういう意味？"]
+  ]},
+  { t:"質問のはじめかた", tag:"この語で始めれば質問になる", hot:true, dense:true, c:[
+    ["Do you ~ ?","〜しますか　Do you play soccer?"],
+    ["Can you ~ ?","〜できますか　Can you swim?"],
+    ["Are you ~ ?","あなたは〜ですか　Are you a soccer fan?"],
+    ["Is it ~ ?","それは〜ですか　Is it popular?"],
+    ["Have you ever ~ ?","〜したことある？　Have you ever tried sushi?"],
+    ["What ~ ?","なに　What do you eat for lunch?"],
+    ["What's your favorite ~ ?","好きな〜は？　What's your favorite food?"],
+    ["Who ~ ?","だれ　Who is your favorite singer?"],
+    ["Where ~ ?","どこ　Where do you live?"],
+    ["When ~ ?","いつ　When do you play?"],
+    ["Which ~ ?","どっち　Which do you like, cats or dogs?"],
+    ["Why ~ ?","なぜ　Why do you like it?"],
+    ["How ~ ?","どう　How is the weather?"],
+    ["How many ~ ?","いくつ　How many students are in your class?"],
+    ["How about ~ ?","〜はどう？　How about you?"]
   ]},
   { t:"じぶんのこと", tag:"", hot:false, c:[
     ["I'm ( Kenji ). Call me ( Ken ).","（名前）です。（ケン）って呼んで"],
@@ -255,7 +277,7 @@ var DECK = [
 (function(){
   var h = "";
   DECK.forEach(function(g){
-    h += '<div class="grp' + (g.hot ? " hot" : "") + '"><h2>' + g.t
+    h += '<div class="grp' + (g.hot ? " hot" : "") + (g.dense ? " dense" : "") + '"><h2>' + g.t
        + (g.tag ? '<span class="tag">' + g.tag + "</span>" : "") + "</h2><div class=\"cards\">";
     g.c.forEach(function(c){
       h += '<div class="c"><div class="en">' + c[0] + '</div><div class="ja">' + c[1] + "</div></div>";
@@ -396,7 +418,7 @@ var STOP = {};
  "let see lets let's like likes have has had got get there here what who when where why how which " +
  "sorry please thanks thank nice cool great good interesting same sure maybe think because example " +
  "say says said mean means question tell every call").split(" ").forEach(function(w){ STOP[w] = 1; });
-var QSTART = /^(do|does|did|are|is|am|was|were|can|could|will|would|what|who|whose|where|when|why|how|which)\b/i;
+var QSTART = /^(do|does|did|are|is|am|was|were|can|could|will|would|have|has|shall|should|may|what|what's|who|whose|where|when|why|how|which)\b/i;
 
 function looksLikePrompt5(s){ return /13-year-old junior high school student in Guatemala/.test(s) || /\[Who you are\]/.test(s); }
 
