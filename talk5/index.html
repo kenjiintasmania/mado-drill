@@ -70,6 +70,7 @@
   .fin{ background:#eef5f1; border:2px solid var(--em); border-radius:12px; padding:14px; margin-top:12px; text-align:center; }
   .fin .t{ font-size:24px; font-weight:800; color:var(--em); }
   .fin .s{ font-size:14px; color:var(--sub); margin-top:4px; }
+  .notes{ margin-top:4px; }
   footer{ margin-top:18px; font-size:12.5px; color:var(--sub); border-top:1px solid var(--line); padding-top:10px; }
 
   .tiles{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
@@ -78,6 +79,16 @@
   .tile .val{ font-size:26px; font-weight:800; color:var(--em); line-height:1.2; }
   .tile .val small{ font-size:13px; font-weight:normal; color:var(--sub); margin-left:4px; }
   .tile.dim .val{ color:var(--sub); font-size:20px; }
+  .total{ display:flex; align-items:baseline; gap:8px; margin-top:4px; }
+  .total .lab{ font-size:14px; color:var(--sub); } .total .v{ font-size:44px; font-weight:800; color:var(--em); line-height:1; }
+  .total .of{ font-size:16px; color:var(--sub); }
+  .tile .pt{ font-size:12px; color:var(--sub); }
+  .chips{ margin-top:8px; } .chips .cl{ font-size:12.5px; color:var(--sub); margin-bottom:3px; }
+  .chip{ display:inline-block; border:1.5px solid var(--line); border-radius:20px; padding:1px 10px; margin:2px 4px 2px 0;
+         font-size:13px; color:#a3acb8; background:#fff; }
+  .chip.on{ border-color:var(--em); background:#e8f4ee; color:var(--em); font-weight:700; }
+  .kana.skim{ background:#eef5f1; border-color:#bfdccb; color:#1f4a35; } .kana.skim b{ color:var(--em); }
+  body.tight .total .v{ font-size:34px; }
   .next{ margin-top:10px; background:#fff1e8; border:2px solid var(--hot); border-radius:10px; padding:10px 12px; font-size:15px; }
   .next b{ color:var(--hot); }
   .next .en{ display:inline-block; background:#fff; border:1.5px solid #f3cdb6; border-radius:7px; padding:1px 8px; margin:3px 4px 0 0; font-weight:600; }
@@ -125,10 +136,15 @@
     <button id="btnTight" title="せまい画面でも手札が見えるように詰めます">ぎゅっと表示</button>
   </div>
   <div class="say" id="say">ゴールは<b>1つだけ</b>。5分のあいだ、だまらないこと。下の手札は<b>見ていい</b>。</div>
+</div>
+
+<div class="notes">
   <div class="kana"><b>英語のつづりが出てこなくても、止まらなくていい。</b>
     <code>I like サッカー</code> でも <code>I like sakkaa</code> でも通じます。
     相手が <b>soccer</b> と言い直して返してくれるので、<b>それを見て次から使えばいい。</b>
     まちがいは指摘されません。</div>
+  <div class="kana skim"><b>相手の返事は、太字だけ先に読む。</b>ぜんぶ読まなくていい。
+    本番の会話は待ってくれません。<b>キーワードをひろって、すぐ返す</b>練習です。</div>
 </div>
 
 <div class="box">
@@ -164,21 +180,24 @@
 
 <div class="box" id="secScore" hidden>
   <h2>③ ふりかえり</h2>
+  <div class="total"><span class="lab">総合</span><span class="v" id="totalV">0</span><span class="of">／20</span></div>
   <div class="tiles" id="tiles"></div>
+  <div class="chips"><div class="cl">質問パターン（色つき＝使えた）</div><div id="patChips"></div></div>
+  <div class="chips"><div class="cl">リアクション・つなぎ（使えたもの）</div><div id="reactChips"></div></div>
   <div class="next" id="nextMove"></div>
   <div class="kanaList" id="kanaList" hidden></div>
   <div class="flag" id="scoreFlag" hidden></div>
   <div class="formula">
-    <b>数え方（ぜんぶ機械で数えています。初期値・要調整）</b><br>
-    <b>話した量</b>＝自分の文にある英語の語とカタカナ語の数。<b>多ければよい、ではありません。</b>ほとんど0でないかを見るだけ。<br>
-    <b>中身のある語</b>＝I / is / the / like / Really? などを除いた、<b>ちがう語</b>の数（同じ語は1回）。カタカナ語も数えます。<br>
-    <b>質問したターン</b>＝? でおわる文、または Do / What / How などで始まる文があるターンの数。<b>率</b>＝それ ÷ 全ターン。
-    <b>Really? だけの文は あいづちなので数えません。</b><br>
-    <b>2文以上のターン</b>＝1回の発言に文が2つ以上あった回数。<br>
-    <b>次の一手</b>＝質問の率 30%未満 → 2文以上の率 30%未満 → 中身のある語 8未満、の順に見て、最初に当てはまったもの1つ。
+    <b>数え方（ぜんぶ機械で数えています。配点は仮置き）</b><br>
+    <b>質問パターン（10点）</b>＝2段目のカードのうち、<b>何種類</b>の出だしで質問できたか。1種類2点、5種類で満点。
+    同じ出だしは何回使っても1種類。<b>Do you like ~ を10回言っても1種類です。</b>3語以上の質問だけ数えます。<br>
+    <b>リアクション・つなぎ（4点）</b>＝Really? / Me too! / I see. / Let me see... などを<b>何種類</b>使えたか。1種類1点。同じものは1回。<br>
+    <b>中身のある文（6点）</b>＝I / is / the / like などを除いた語が1つ以上ある文の数。2文で1点。あいづちだけの文は入れません。<br>
+    <b>単語数</b>＝英語の語とカタカナ語の数。<b>点には入れていません。</b><br>
+    <b>次の一手</b>＝質問パターンが5種類未満なら、まだ使っていない出だしを1つ。
   </div>
   <div class="row"><button id="btnCopyScore">ふりかえりをコピー</button><span class="ok" id="msgCopyScore"></span></div>
-  <div class="hint" style="margin-top:8px"><b>この数は成績と関係ありません。</b>記録も送信もしていません。<br>
+  <div class="hint" style="margin-top:8px"><b>この点は成績と関係ありません。</b>記録も送信もしていません。<br>
     <b>楽しかったかどうかは、測っていません。</b>それはここに出ていない、いちばん大事なことです。</div>
 </div>
 
@@ -199,7 +218,7 @@
 </div>
 <script>
 "use strict";
-var APP_VER = "talk5 0.4";
+var APP_VER = "talk5 0.5";
 var AI_URL  = "https://www.google.com/search?udm=50";
 var SEC     = 300;                       /* 5分。本番と同じ長さ */
 var $ = function(id){ return document.getElementById(id); };
@@ -220,6 +239,7 @@ var DECK = [
   ]},
   { t:"質問のはじめかた", tag:"この語で始めれば質問になる", hot:true, dense:true, c:[
     ["Do you ~ ?","〜しますか　Do you play soccer?"],
+    ["Did you ~ ?","〜しましたか　Did you watch TV yesterday?"],
     ["Can you ~ ?","〜できますか　Can you swim?"],
     ["Are you ~ ?","あなたは〜ですか　Are you a soccer fan?"],
     ["Is it ~ ?","それは〜ですか　Is it popular?"],
@@ -317,6 +337,18 @@ function promptText(){
 +"  Show the English once in brackets, then move on:  ( You can say: I like soccer. )\n"
 +"  Never stop the conversation to teach. One bracket, then keep talking.\n"
 +"\n"
++"[Bold the key words]\n"
++"・In EVERY reply, put the 2 to 4 most important words in **bold** (markdown).\n"
++"  Bold only the words I must catch to understand you: names, things, places, numbers, the question word.\n"
++"  Never bold a whole sentence. I will read only the bold words first, like listening in a real talk.\n"
++"    Example:  I love **soccer** too! **Who** is your favorite **player**?\n"
++"\n"
++"[Give me chances to ask different kinds of questions]\n"
++"・Now and then, in one short sentence, mention:\n"
++"  something you DID (yesterday, last weekend), something you CAN do, a place you HAVE BEEN to.\n"
++"  Say it and stop. Do not ask me anything after it.\n"
++"  That lets me ask \"Did you ...?\", \"Can you ...?\", \"Have you ever ...?\", \"Where ...?\", \"Why ...?\".\n"
++"\n"
 +"[The first 2 minutes: help me]\n"
 +"・End every turn with a question, so I always have something to answer.\n"
 +"・Keep questions easy: name, age, food, sport, music, school.\n"
@@ -403,13 +435,13 @@ $("btnGo").addEventListener("click", start);
 $("btnRe").addEventListener("click", reset);
 $("btnAgain").addEventListener("click", function(){ reset(); window.scrollTo({ top:0, behavior:"smooth" }); });
 
-/* ─────────── ふりかえり ───────────
-   AIには<書き写し>だけさせる。数えるのはここ。AIの申告は使わない。
-   しきい値は初期値（要調整）。式は画面に全部出してある。 */
-var Q_RATE = 0.30, MULTI_RATE = 0.30, INFO_MIN = 8;
+/* ─────────── ふりかえり（v0.5）───────────
+   AIには<書き写し>だけさせる。数えるのはここ。
+   配点（仮置き）：質問パターン 1種類2点・上限10 ／ リアクション・つなぎ 1種類1点・上限4 ／
+                   中身のある文 2文で1点・上限6 ／ 単語数は表示のみ。合計20点。
+   種類数で数えるので、同じ言い方をくり返しても点は増えない。 */
+var PT_Q = 2, CAP_Q = 10, CAP_R = 4, CAP_S = 6;
 var SEP5 = /^\s*[=＝]{3,}\s*(.*?)\s*[=＝]{3,}\s*$/;
-var FILLER = [/let me see/gi, /good question/gi, /how do you say/gi, /one more time/gi,
-              /what does that mean/gi, /how about you/gi, /nice to meet you/gi, /same here/gi, /i see/gi];
 var STOP = {};
 ("i i'm im i've ive i'd id me my mine you your you're youre he she it it's its we they them our us " +
  "a an the this that these those is am are was were be been do does did don't dont doesn't doesnt didn't didnt " +
@@ -417,15 +449,56 @@ var STOP = {};
  "very too really just also not no yes yeah yep ok okay oh ah wow hi hello hey bye well hmm mmm um uh " +
  "let see lets let's like likes have has had got get there here what who when where why how which " +
  "sorry please thanks thank nice cool great good interesting same sure maybe think because example " +
- "say says said mean means question tell every call").split(" ").forEach(function(w){ STOP[w] = 1; });
-var QSTART = /^(do|does|did|are|is|am|was|were|can|could|will|would|have|has|shall|should|may|what|what's|who|whose|where|when|why|how|which)\b/i;
+ "say says said mean means question tell every call ever many much").split(" ").forEach(function(w){ STOP[w] = 1; });
+
+/* 質問パターン＝2段目のカードと1対1。並びは「次の一手」で出す順（言いやすい順） */
+var PATS = [
+  ["do","Do you ~ ?","Do you play soccer?"], ["what","What ~ ?","What do you eat for lunch?"],
+  ["howabout","How about ~ ?","How about you?"], ["can","Can you ~ ?","Can you swim?"],
+  ["did","Did you ~ ?","Did you watch TV yesterday?"], ["are","Are you ~ ?","Are you a soccer fan?"],
+  ["have","Have you ever ~ ?","Have you ever tried sushi?"], ["where","Where ~ ?","Where do you live?"],
+  ["whatfav","What's your favorite ~ ?","What's your favorite food?"], ["who","Who ~ ?","Who is your favorite singer?"],
+  ["when","When ~ ?","When do you play?"], ["why","Why ~ ?","Why do you like it?"],
+  ["which","Which ~ ?","Which do you like, cats or dogs?"], ["how","How ~ ?","How is the weather?"],
+  ["howmany","How many ~ ?","How many students are in your class?"], ["is","Is it ~ ?","Is it popular?"]
+];
+var SUBJ = /^(you|your|he|she|it|they|we|i|this|that|there|the|people|students|everyone|anyone)$/;
+function patternOf(s, hasQ){
+  var w = s.split(" ");
+  if (w.length < 3) return null;                       /* "Can you?" だけでは数えない */
+  if (/^(how|what) about\b/.test(s)) return "howabout";
+  if (/^how (many|much)\b/.test(s)) return "howmany";
+  if (/^what('s| is| are) your favou?rite\b/.test(s)) return "whatfav";
+  var m = s.match(/^(what|who|where|when|which|why|how)('s)?\b/);
+  if (m) return m[1];
+  var a = w[0], subj = hasQ || SUBJ.test(w[1] || "");
+  if (!subj) return null;
+  if (a === "do" || a === "does") return "do";
+  if (a === "did") return "did";
+  if (a === "can" || a === "could") return "can";
+  if (a === "are" || a === "am" || a === "were") return "are";
+  if (a === "is" || a === "was") return "is";
+  if (a === "have" || a === "has") return "have";
+  return null;
+}
+/* リアクション・つなぎ。文まるごとがこれに当たるときだけ数える（wow / well は文頭でも数える） */
+var REACTS = [
+  ["Really?", /^really$/], ["Wow!", /^wow$/], ["Me too!", /^me too$/], ["Same here!", /^same( here)?$/],
+  ["I see.", /^i see$/], ["I think so.", /^i think so( too)?$/], ["That's right.", /^(that's |thats |that is )?right$/],
+  ["Sure.", /^(sure|of course)$/], ["No way!", /^no way$/], ["Thank you.", /^(thank you|thanks)( very much| so much)?$/],
+  ["Sounds ~.", /^sounds (so |very |really )?[a-z]+$/],
+  ["Let me see...", /^(let me see|let's see|lets see)$/], ["Well...", /^well$/], ["Good question!", /^good question$/],
+  ["How do you say...", /^how do you say\b/],
+  ["One more time?", /^(sorry )?(one more time|again please|say that again|could you say that again|pardon)( please)?$/],
+  ["What does ~ mean?", /^what does .+ mean$/]
+];
+var ADJ = /^(that's |thats |that is |it's |its |it is )?(so |very |really )?(nice|cool|great|good|interesting|awesome|amazing|fun)$/;
 
 function looksLikePrompt5(s){ return /13-year-old junior high school student in Guatemala/.test(s) || /\[Who you are\]/.test(s); }
-
 function parseLog(raw){
   var lines = String(raw == null ? "" : raw).replace(/\r/g, "").split("\n");
   var inBlock = false, sawBlock = false, turns = [];
-  var clean = function(l){ return l.replace(/^\s*(?:[0-9０-９]+\s*[.．)）:：]|[・\-–—*])\s*/, "").trim(); };
+  var clean = function(l){ return l.replace(/^\s*(?:[0-9０-９]+\s*[.．)）:：]|[・\-–—*])\s*/, "").replace(/\*\*/g, "").trim(); };
   lines.forEach(function(line){
     var m = line.match(SEP5);
     if (m) {
@@ -435,55 +508,70 @@ function parseLog(raw){
     }
     if (inBlock) { var s = clean(line); if (s && !/^\(my .* message\)$/i.test(s)) turns.push(s); }
   });
-  if (!sawBlock) {   /* 見出しが無い：英字かカタカナのある行を全部ひろう（AIの文もまじる） */
+  if (!sawBlock) {
     lines.forEach(function(line){ var s = clean(line); if (s && /[A-Za-zァ-ヶ]/.test(s)) turns.push(s); });
   }
   return { turns: turns, sawBlock: sawBlock };
 }
-function sentencesOf(turn){
-  return turn.split(/[.!?。！？]+/).map(function(x){ return x.trim(); })
-             .filter(function(x){ return /[A-Za-zァ-ヶ0-9]/.test(x); });
+function normS(s){
+  return s.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9' ァ-ヶー]/g, " ").replace(/\s+/g, " ").trim();
 }
-var REACT_ONLY = /^(really|oh|ah|wow|yes|yeah|no|ok|okay|huh|eh|me too|same here|cool|nice)$/i;
-function isQuestionTurn(turn){
-  var parts = turn.match(/[^.!?。！？]+[.!?。！？]*/g) || [];
-  return parts.some(function(part){
-    var body = part.replace(/[.!?。！？]+$/, "").replace(/^[\s,、]+|[\s,、]+$/g, "");
-    if (!/[A-Za-zァ-ヶ0-9]/.test(body)) return false;
-    if (REACT_ONLY.test(body)) return false;              /* "Really?" だけは あいづち */
-    if (/[?？]\s*$/.test(part)) return true;
-    return QSTART.test(body) || /\b(and|how about) you$/i.test(body);
+function hasContent(s){
+  return s.split(" ").some(function(w){
+    if (/[ァ-ヶ]/.test(w) || /^[0-9]+$/.test(w)) return true;
+    var k = w.replace(/^'+|'+$/g, "").replace(/(n't|'s|'re|'m|'ve|'d|'ll)$/, "");
+    return k.length > 1 && /[a-z]/.test(k) && !STOP[k];
   });
 }
 function scoreLog(raw){
   var P = parseLog(raw), turns = P.turns;
-  var words = 0, chars = 0, info = {}, kana = {}, qTurns = 0, multi = 0;
+  var words = 0, kana = {}, pat = {}, react = {}, sents = 0, qCount = 0;
   turns.forEach(function(turn){
-    chars += turn.replace(/\s/g, "").length;
-    var en = turn.match(/[A-Za-z][A-Za-z']*/g) || [];
     var ka = turn.match(/[ァ-ヶー]{2,}/g) || [];
-    var nums = turn.match(/[0-9]+/g) || [];
-    words += en.length + ka.length + nums.length;
-    var body = turn; FILLER.forEach(function(re){ body = body.replace(re, " "); });
-    (body.match(/[A-Za-z][A-Za-z']*/g) || []).forEach(function(w){
-      var k = w.toLowerCase().replace(/^'+|'+$/g, "").replace(/(n't|'s|'re|'m|'ve|'d|'ll)$/, "");
-      if (k.length > 1 && !STOP[k]) info[k] = 1; });
-    ka.forEach(function(w){ info[w] = 1; kana[w] = 1; });
-    nums.forEach(function(w){ info[w] = 1; });
-    if (isQuestionTurn(turn)) qTurns++;
-    if (sentencesOf(turn).length >= 2) multi++;
+    words += (turn.match(/[A-Za-z][A-Za-z']*/g) || []).length + ka.length + (turn.match(/[0-9]+/g) || []).length;
+    ka.forEach(function(w){ kana[w] = 1; });
+    (turn.match(/[^.!?。！？]+[.!?。！？]*/g) || []).forEach(function(part){
+      var hasQ = /[?？]\s*$/.test(part);
+      var s = normS(part.replace(/[.!?。！？]+$/, ""));
+      if (!s) return;
+      var guard = 0;
+      while (guard++ < 4) {                              /* 文頭の oh / wow / well / yes などを外す */
+        var m = s.match(/^(oh|ah|hmm|mmm|um|uh|wow|well|yes|yeah|no|ok|okay|so|and|but|then)\b ?/);
+        if (!m || s === m[1]) break;
+        if (m[1] === "wow") react["Wow!"] = 1;
+        if (m[1] === "well") react["Well..."] = 1;
+        s = s.slice(m[0].length).trim();
+      }
+      for (var i = 0; i < REACTS.length; i++) {
+        if (REACTS[i][1].test(s)) { react[REACTS[i][0]] = 1; return; }   /* あいづち・つなぎだけの文 */
+      }
+      var am = s.match(ADJ);
+      if (am) { react["That's " + am[3] + "."] = 1; return; }
+      var pk = patternOf(s, hasQ);
+      if (pk) pat[pk] = 1;
+      if (pk || hasQ || /\band you$/.test(s)) qCount++;
+      if (hasContent(s)) sents++;
+    });
   });
-  var n = turns.length;
-  return { n:n, words:words, chars:chars, info:Object.keys(info).length, infoList:Object.keys(info),
-           kana:Object.keys(kana), q:qTurns, qRate:(n ? qTurns/n : 0),
-           multi:multi, multiRate:(n ? multi/n : 0), sawBlock:P.sawBlock };
+  var pats = PATS.filter(function(x){ return pat[x[0]]; }).map(function(x){ return x[0]; });
+  var reacts = Object.keys(react);
+  var qPts = Math.min(CAP_Q, pats.length * PT_Q), rPts = Math.min(CAP_R, reacts.length), sPts = Math.min(CAP_S, Math.floor(sents / 2));
+  return { n:turns.length, words:words, kana:Object.keys(kana), pats:pats, reacts:reacts, sents:sents, qCount:qCount,
+           qPts:qPts, rPts:rPts, sPts:sPts, total:qPts + rPts + sPts, sawBlock:P.sawBlock };
 }
 function nextMove(s){
   if (s.n < 3) return ["まず<b>3回以上</b>やりとりしてみる。", ["Hi, I'm ( Ken ).", "Nice to meet you!"]];
-  if (s.qRate < Q_RATE)     return ["言い終わったら、<b>質問でおわる</b>。次に話すのは相手になります。", ["How about you?", "Do you like ( soccer )?"]];
-  if (s.multiRate < MULTI_RATE) return ["1文でおわらせず、<b>もう1文たす</b>。", ["Because it's fun.", "For example, ( ~ )."]];
-  if (s.info < INFO_MIN)    return ["<b>すきなものを2つ</b>言ってみる。中身がふえます。", ["I like ( soccer ).", "My favorite ( food ) is ( ramen )."]];
-  return ["3つともできています。次は<b>手札を見る回数を1つへらす</b>。", []];
+  if (s.pats.length < 5) {
+    var un = PATS.filter(function(x){ return s.pats.indexOf(x[0]) < 0; })[0];
+    return ["まだ使っていない出だしで質問する：<b>" + un[1] + "</b>", [un[2]]];
+  }
+  if (s.reacts.length < CAP_R) {
+    var pool = ["Really?", "Me too!", "I see.", "That's nice.", "Wow!", "Let me see..."];
+    var ur = pool.filter(function(x){ return s.reacts.indexOf(x) < 0; });
+    return ["相手が話したら、<b>ちがうリアクション</b>を1つ足す。", ur.slice(0, 2)];
+  }
+  if (s.sPts < CAP_S) return ["1文でおわらせず、<b>もう1文たす</b>。", ["Because it's fun.", "For example, ( ~ )."]];
+  return ["ぜんぶできています。次は<b>手札を見る回数を1つへらす</b>。", []];
 }
 var lastScoreText = "";
 function renderScore(){
@@ -491,12 +579,18 @@ function renderScore(){
   if (!raw.trim()) { $("msgScore").textContent = "まだ何もはっていません"; return; }
   if (looksLikePrompt5(raw)) {
     $("msgScore").textContent = "それは①のプロンプトです。AIに finish と送って、出てきたほうをはってください"; return; }
-  var s = scoreLog(raw), pct = function(x){ return Math.round(x * 100); };
+  var s = scoreLog(raw);
+  $("totalV").textContent = s.total;
   $("tiles").innerHTML =
-      '<div class="tile"><div class="lab">中身のある語（ちがう語の数）</div><div class="val">' + s.info + '</div></div>'
-    + '<div class="tile"><div class="lab">質問したターン</div><div class="val">' + s.q + '<small>／' + s.n + ' ターン（' + pct(s.qRate) + '%）</small></div></div>'
-    + '<div class="tile"><div class="lab">2文以上のターン</div><div class="val">' + s.multi + '<small>／' + s.n + ' ターン</small></div></div>'
-    + '<div class="tile dim"><div class="lab">話した量（目標にはしません）</div><div class="val">' + s.words + ' 語<small>' + s.chars + ' 文字</small></div></div>';
+      '<div class="tile"><div class="lab">質問パターン</div><div class="val">' + s.pats.length + '<small>種類</small></div><div class="pt">' + s.qPts + '／' + CAP_Q + ' 点（質問は全部で ' + s.qCount + ' 回）</div></div>'
+    + '<div class="tile"><div class="lab">リアクション・つなぎ</div><div class="val">' + s.reacts.length + '<small>種類</small></div><div class="pt">' + s.rPts + '／' + CAP_R + ' 点</div></div>'
+    + '<div class="tile"><div class="lab">中身のある文</div><div class="val">' + s.sents + '<small>文</small></div><div class="pt">' + s.sPts + '／' + CAP_S + ' 点</div></div>'
+    + '<div class="tile dim"><div class="lab">単語数（点には入れません）</div><div class="val">' + s.words + ' 語</div></div>';
+  $("patChips").innerHTML = PATS.map(function(x){
+    return '<span class="chip' + (s.pats.indexOf(x[0]) >= 0 ? " on" : "") + '">' + x[1] + "</span>"; }).join("");
+  $("reactChips").innerHTML = s.reacts.length
+    ? s.reacts.map(function(x){ return '<span class="chip on">' + x + "</span>"; }).join("")
+    : '<span class="chip">まだありません</span>';
   var nm = nextMove(s);
   $("nextMove").innerHTML = "<b>次の一手：</b>" + nm[0]
     + (nm[1].length ? "<br>" + nm[1].map(function(e){ return '<span class="en">' + e + "</span>"; }).join("") : "");
@@ -506,18 +600,21 @@ function renderScore(){
       + "　→ 相手が英語で言い直してくれていたはず。<b>次はそれを使ってみる。</b>（止まらなかったので、これで正解です）";
   } else { $("kanaList").hidden = true; }
   var flags = [];
-  if (!s.sawBlock) flags.push("「===== MY LINES =====」が見つからなかったので、<b>はられた文ぜんぶ</b>から数えました。AIの文もまじっていて、数が多めに出ているかもしれません。");
+  if (!s.sawBlock) flags.push("「===== MY LINES =====」が見つからなかったので、<b>はられた文ぜんぶ</b>から数えました。AIの文もまじっていて、点が高めに出ているかもしれません。");
   if (s.n === 0)   flags.push("自分の文が1つも読み取れませんでした。AIに finish と送って、出てきたものをはってください。");
   $("scoreFlag").hidden = !flags.length; $("scoreFlag").innerHTML = flags.join("<br>");
+  var label = function(k){ return PATS.filter(function(x){ return x[0] === k; })[0][1]; };
   lastScoreText = "5分チャレンジ ふりかえり（" + APP_VER + "）\n"
-    + "中身のある語：" + s.info + "\n"
-    + "質問したターン：" + s.q + "／" + s.n + "（" + pct(s.qRate) + "%）\n"
-    + "2文以上のターン：" + s.multi + "／" + s.n + "\n"
-    + "話した量：" + s.words + " 語（" + s.chars + " 文字）※目標にはしません\n"
+    + "総合：" + s.total + "／20\n"
+    + "質問パターン：" + s.pats.length + "種類（" + s.qPts + "点）" + (s.pats.length ? "　" + s.pats.map(label).join(" / ") : "") + "\n"
+    + "リアクション・つなぎ：" + s.reacts.length + "種類（" + s.rPts + "点）" + (s.reacts.length ? "　" + s.reacts.join(" / ") : "") + "\n"
+    + "中身のある文：" + s.sents + "文（" + s.sPts + "点）\n"
+    + "単語数：" + s.words + "語（点には入れません）\n"
     + (s.kana.length ? "カタカナで言った語：" + s.kana.join("、") + "\n" : "")
     + "次の一手：" + nm[0].replace(/<[^>]+>/g, "") + (nm[1].length ? "　" + nm[1].join(" / ") : "") + "\n"
     + (flags.length ? "注意：" + flags.join(" ").replace(/<[^>]+>/g, "") + "\n" : "")
-    + "※この数は成績と関係ありません。楽しかったかどうかは測っていません。";
+    + "スプシ用（総合/質問種類/リアクション種類/文/語数）：\t" + [s.total, s.pats.length, s.reacts.length, s.sents, s.words].join("\t") + "\n"
+    + "※この点は成績と関係ありません。楽しかったかどうかは測っていません。";
   $("secScore").hidden = false; $("msgScore").textContent = "";
   $("secScore").scrollIntoView({ behavior:"smooth", block:"start" });
 }
